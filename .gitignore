@@ -1,0 +1,14 @@
+#maven
+/target/
+
+#idea
+/.idea/
+*.iml
+/*.ipr
+*.iws
+
+#eclipse
+.project
+.classpath
+.settings/
+test-output/

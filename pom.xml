@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sbforge</groupId>
+    <artifactId>sbforge-parent</artifactId>
+    <version>21</version>
+  </parent>
+
+  <groupId>dk.kb.similar</groupId>
+  <artifactId>similar-lib</artifactId>
+  <version>0.1-SNAPSHOT</version>
+
+  <scm>
+    <url>https://sbprojects.statsbiblioteket.dk/stash/projects/ARK/repos/java-library-template/browse</url>
+    <connection>scm:git:ssh://git@sbprojects.statsbiblioteket.dk:7999/ark/java-library-template.git</connection>
+    <developerConnection>scm:git:ssh://git@sbprojects.statsbiblioteket.dk:7999/ark/java-library-template.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+  
+  <repositories>
+    <repository>
+      <id>sbforge-nexus</id>
+      <url>https://sbforge.org/nexus/content/groups/public</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <properties>
+    <test.groups>fast</test.groups>
+    <!-- Specify java version here, to support forbiddenapis plugin -->
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <!-- Replace the line below with
+         <api.check.phase>none</api.check.phase>
+         to disable forbidden APIs check -->
+    <api.check.phase>process-classes</api.check.phase>
+  </properties>
+
+  <profiles>
+    <profile>
+      <id>allTests</id>
+      <properties>
+        <test.groups>fast,slow</test.groups>
+      </properties>
+    </profile>
+  </profiles>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.28</version>
+    </dependency>
+
+
+    <dependency> <!--Libraries should only include logback in scope tests-->
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.3</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.5.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.25</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <groups>${test.groups}</groups>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

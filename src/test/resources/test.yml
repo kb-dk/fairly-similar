@@ -1,0 +1,10 @@
+# Test YAML
+test:
+  somestring: Hello World
+  someint: 87
+  nested:
+    sublevel2string: sub1
+  arrayofstrings:
+    - a
+    - b
+    - c
