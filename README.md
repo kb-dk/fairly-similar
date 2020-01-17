@@ -42,5 +42,25 @@ The numbers are all positive and there is a tendency for vectors to have a fairl
 
 1. Download the [binary](https://labs-devel.statsbiblioteket.dk/pixplot/kb_all/pixplot_vectors_270707.bin)
 sample data and put then in `src/test/resources/`
-1. Make a package (`mav package`)
-1. Run `java -cp target/similar-lib-0.1-SNAPSHOT.jar:src/test/resources/ dk.kb.similar.NearestNeighbour`
+2. Make a package (`mav package`)
+3. Run `java -cp target/similar-lib-0.1-SNAPSHOT.jar:src/test/resources/ dk.kb.similar.NearestNeighbour`
+
+## How to fight
+
+1. Create a new class in `dk.kb.similar.finder` that implements `NearestFinder`
+2. Add an instance of your class to `NearestNeighbour.createFinders`
+3. Run the `NearestNeighbour` as described above and compare the results
+
+## Current status
+
+On an older 4 core i5 desktop:
+`java -cp target/similar-lib-0.1-SNAPSHOT.jar:src/test/resources/ dk.kb.similar.NearestNeighbour 50,000 20`
+```
+...
+EarlyNearestFinder: 1571ms (636,443 points/sec, totalDist=3444.3)
+StrongestSignalsFinder: 194ms (5,128,772 points/sec, totalDist=3459.1)
+DiceNearestFinder: 170ms (5,877,439 points/sec, totalDist=4579.0)
+RandomFinder: 3ms (306,026,768 points/sec, totalDist=7974.7)
+```
+
+`EarlyNearestFinder` guarantees "correct" results, meaning the points that are nearest to each other, measured by Eucliduan distance.
