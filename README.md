@@ -54,7 +54,7 @@ sample data and put then in `src/test/resources/`
 ## Current status
 
 On an older 4 core i5 desktop:
-`java -cp target/similar-lib-0.1-SNAPSHOT.jar:src/test/resources/ dk.kb.similar.NearestNeighbour 50,000 20`
+`java -cp target/similar-lib-0.1-SNAPSHOT.jar:src/test/resources/ dk.kb.similar.NearestNeighbour 50000 20`
 ```
 ...
 EarlyNearestFinder: 1571ms (636,443 points/sec, totalDist=3444.3)
