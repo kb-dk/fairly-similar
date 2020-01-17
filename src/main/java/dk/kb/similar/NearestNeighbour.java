@@ -94,7 +94,7 @@ public class NearestNeighbour {
             multiDimPoints.fill(distribution, true);
         }
         List<NearestFinder> finders = createFinders(multiDimPoints);
-        StringBuffer summary = new StringBuffer(1000);
+        StringBuilder summary = new StringBuilder(1000);
 
         final int[] nearestPoints = new int[runs];
         final double[] nearestDist = new double[runs];
@@ -129,7 +129,7 @@ public class NearestNeighbour {
                     Locale.ENGLISH,"%dms (%,d points/sec, totalDist=%.1f)",
                     totalNS / 1000000, totalPointsPerSec, totalDist);
             System.out.println("Total: " + stats + "\n");
-            summary.append(finder.getClass().getSimpleName()).append(": ").append(stats);
+            summary.append(finder.getClass().getSimpleName()).append(": ").append(stats).append("\n");
         }
 
         System.out.println("\nFinished processing. Final summary:\n" + summary);
