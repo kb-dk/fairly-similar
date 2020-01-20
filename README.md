@@ -42,7 +42,7 @@ The numbers are all positive and there is a tendency for vectors to have a fairl
 
 1. Download the [binary](https://labs-devel.statsbiblioteket.dk/pixplot/kb_all/pixplot_vectors_270707.bin)
 sample data and put then in `src/test/resources/`
-2. Make a package (`mav package`)
+2. Make a package (`mvn package`)
 3. Run `java -cp target/similar-lib-0.1-SNAPSHOT.jar:src/test/resources/ dk.kb.similar.NearestNeighbour`
 
 ## How to fight
