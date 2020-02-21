@@ -63,4 +63,4 @@ DiceNearestFinder: 170ms (5,877,439 points/sec, totalDist=4579.0)
 RandomFinder: 3ms (306,026,768 points/sec, totalDist=7974.7)
 ```
 
-`EarlyNearestFinder` guarantees "correct" results, meaning the points that are nearest to each other, measured by Eucliduan distance.
+`EarlyNearestFinder` guarantees "correct" results, meaning the points that are nearest to each other, measured by Euclidian distance.
