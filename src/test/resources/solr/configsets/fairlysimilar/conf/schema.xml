@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+
+<schema name="template" version="1.8">
+  <!--
+       * All fields are prefixed with a comment describing the field
+       * The content of the comment is markdown, in expectation of automated documentation generation
+       * Where it makes sense, sample queries or suggestions for use are included
+  -->
+  <fields>
+    <!-- Solr-internal fields -->
+   <field name="_version_"        type="plong" indexed="false" stored="false"/>
+   <field name="id"               type="string" stored="true" required="true" />
+   <field name="thresholds"       type="int" stored="true" required="true" />  
+   <field name="lengthsquared"    type="double" stored="true" required="true" /> 
+   <field name="coordinates"      type="string" stored="true" indexed="false" required="true" /> 
+
+   <!-- for coordinates thresholds-->
+   <dynamicField name="*_threshold" type="boolean" indexed="true"  stored="true"/>
+
+  </fields>
+
+  <uniqueKey>id</uniqueKey>
+
+  <types>   
+    <fieldType name="string"     class="solr.StrField"          indexed="true"  stored="true" sortMissingLast="true" />
+    <fieldType name="boolean"    class="solr.BoolField"         indexed="true"  stored="true"  sortMissingLast="true" />
+    <fieldType name="double"     class="DoublePointField"       indexed="true"  stored="true"  sortMissingLast="true" />
+    <fieldType name="int"        class="solr.IntPointField"     indexed="true"  stored="true"  sortMissingLast="true" />
+    <fieldType name="plong" class="solr.LongPointField" docValues="true"/>
+  </types>
+</schema>
