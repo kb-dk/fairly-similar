@@ -27,7 +27,7 @@ import java.util.*;
  * Extend {@link #createFinders(MultiDimPoints)} with new candidates.
  */
 public class NearestNeighbour {
-    public static final int POINTS_DEFAULT = 20000;
+    public static final int POINTS_DEFAULT = 270707;
     public static final int RUNS_DEFAULT = 10;
     public static final int DIMENSIONS_DEFAULT = 2048;
     private static final String SAMPLE_DEFAULT = "pixplot_vectors_270707.bin";
@@ -40,15 +40,17 @@ public class NearestNeighbour {
     enum DISTRIBUTION {random, linear, exponential, logarithmic, onlyTen, thack2, load}
 
     private List<NearestFinder> createFinders(MultiDimPoints multiDimPoints) {
-        List<NearestFinder> finders = new ArrayList<>();
-//        finders.add(new DumbNearestFinder(multiDimPoints)); // Guaranteed correct
-        finders.add(new EarlyNearestFinder(multiDimPoints)); // Guaranteed correct
-
-        finders.add(new StrongestSignalsFinder(multiDimPoints));
-        finders.add(new DiceNearestFinder(multiDimPoints));
-//        finders.add(new LengthNearestFinder(multiDimPoints));
-        finders.add(new RandomFinder(multiDimPoints));
-        return finders;
+    
+      
+      List<NearestFinder> finders = new ArrayList<>();
+     //finders.add(new DumbNearestFinder(multiDimPoints)); // Guaranteed correct
+     //finders.add(new EarlyNearestFinder(multiDimPoints)); // Guaranteed correct
+       finders.add(new StrongestSignalsFinder(multiDimPoints));
+     //finders.add(new DiceNearestFinder(multiDimPoints));
+     //finders.add(new LengthNearestFinder(multiDimPoints));
+       finders.add( new HeuristicSolrFinder(multiDimPoints));
+     //finders.add(new RandomFinder(multiDimPoints));
+      return finders;
     }
 
     public static void main(String[] args) throws IOException {
