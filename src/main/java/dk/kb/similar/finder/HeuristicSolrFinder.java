@@ -63,6 +63,7 @@ extends NearestFinder {
          for (String id_solr : ids) {
            int id = Integer.parseInt(id_solr)-1; //Solr id's start from 1.
            double dist = exactDistanceSquared(id, basePoint);
+           //double dist = atMostDistanceSquared(bestDist,id, basePoint);
            if (dist < bestDist) {
              bestDist = dist;
              bestId=id;
