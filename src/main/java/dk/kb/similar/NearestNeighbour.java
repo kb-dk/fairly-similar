@@ -45,11 +45,11 @@ public class NearestNeighbour {
       List<NearestFinder> finders = new ArrayList<>();
      //finders.add(new DumbNearestFinder(multiDimPoints)); // Guaranteed correct
      //finders.add(new EarlyNearestFinder(multiDimPoints)); // Guaranteed correct
-      finders.add(new StrongestSignalsFinder(multiDimPoints));
-      // finders.add(new DiceNearestFinder(multiDimPoints));
-      //finders.add(new LengthNearestFinder(multiDimPoints));
-      finders.add( new HeuristicSolrFinder(multiDimPoints));
-      //finders.add(new RandomFinder(multiDimPoints));
+       finders.add(new StrongestSignalsFinder(multiDimPoints));
+     //finders.add(new DiceNearestFinder(multiDimPoints));
+     //finders.add(new LengthNearestFinder(multiDimPoints));
+       finders.add( new HeuristicSolrFinder(multiDimPoints));
+     //finders.add(new RandomFinder(multiDimPoints));
       return finders;
     }
 
