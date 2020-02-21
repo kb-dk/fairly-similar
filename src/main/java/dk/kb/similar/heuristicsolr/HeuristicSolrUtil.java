@@ -2,6 +2,7 @@ package dk.kb.similar.heuristicsolr;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -102,7 +103,7 @@ public class HeuristicSolrUtil {
 
   public static void indexFile(String file) throws Exception {
     FairlySimilarSolrClient solrClient = FairlySimilarSolrClient.getInstance();
-    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
 
       // Something to tweak.
@@ -128,7 +129,7 @@ public class HeuristicSolrUtil {
   }
 
   public static boolean[] getBitMapForLine(String file, int lineNumber) throws Exception {
-    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
       final double THRESHOLD = 1.5d; // Something to tweak. value of 1.2 gives
       // ~50 coordinate over threshold
@@ -148,7 +149,7 @@ public class HeuristicSolrUtil {
 
   public static double[] getCoordsFromLine(String file, int lineNumber) throws Exception {
 
-    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
 
       // ~50 coordinate over threshold
@@ -316,7 +317,7 @@ public class HeuristicSolrUtil {
   public static SortedSet<ImageNumberWithDistance> findBestBruteForce(double[] coords, int numberOfHits, String file) throws Exception {
 
     SortedSet<ImageNumberWithDistance> set = new TreeSet<>();
-    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
       int linesRead = 1;
 

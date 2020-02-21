@@ -13,7 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.FileReader;
-
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -207,7 +207,7 @@ public static void createGallery() {
   public static HashMap<Integer, String> loadFileNames(String file) throws Exception {
     System.out.println("reading fileNames file:" + file);
     HashMap<Integer, String> imageMap = new HashMap<Integer, String>();
-    try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
       int linesRead = 1;
 
