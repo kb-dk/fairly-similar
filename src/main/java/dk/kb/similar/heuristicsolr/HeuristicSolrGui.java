@@ -157,16 +157,12 @@ public class HeuristicSolrGui extends JFrame {
   }
 
 public  void createGallery() {
-
-      
       galleryPanel.removeAll();
        
       GridBagConstraints gbc = new GridBagConstraints();
       gbc.anchor = GridBagConstraints.WEST;
       gbc.fill = GridBagConstraints.NONE;
       gbc.insets = new Insets(5, 2, 5, 2);
-      
-      
       
       int i=0;
       for (ImageNumberWithDistance  current : bestImages) {                            
@@ -180,17 +176,11 @@ public  void createGallery() {
         label.addMouseListener(new ImageClickedMouseListener(current.getImageName()));
         RenderGalleryImageThread thread = new RenderGalleryImageThread(imageFolder +current.getImageName(),label);
         thread.start();
-
         
        i++;
       }
        
-       
-      
       galleryPanel.revalidate();
-      
-     
-      
 
   }
 
