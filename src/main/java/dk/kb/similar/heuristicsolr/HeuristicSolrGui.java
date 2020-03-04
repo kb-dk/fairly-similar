@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -164,10 +165,9 @@ public  void createGallery() {
       int i=0;
       for (ImageNumberWithDistance  current : bestImages) {
                
-        ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
-        ImageIcon picScaled = scaleImage(pic, 200, 200);
-
-        JLabel label  =  new JLabel (current.getImageName() +" ("+current.getDistance()+")", picScaled, JLabel.CENTER);                
+              
+         System.out.println("added image");
+         JLabel label  = new JLabel (current.getImageName() +" ("+current.getDistance()+")", new ImageIcon(new BufferedImage(200,200,BufferedImage.TYPE_INT_ARGB)), JLabel.CENTER);                
         label.setVerticalTextPosition(JLabel.BOTTOM);
         label.setHorizontalTextPosition(JLabel.CENTER);
         gbc.gridy = i/4;
@@ -175,6 +175,9 @@ public  void createGallery() {
         gbc.gridwidth = 1;          
         galleryPanel.add( label,gbc); 
         label.addMouseListener(new ImageClickedMouseListener(current.getImageName()));
+        RenderGalleryImageThread thread = new RenderGalleryImageThread(imageFolder +current.getImageName(),label);
+        thread.start();
+
         
        i++;
       }
@@ -236,62 +239,6 @@ class ImageClickedMouseListener implements MouseListener{
   
 }
 
-public static void createGalleryOLD() {
-
-  JFrame galleryFrame = new JFrame();
-  galleryFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect
-  galleryFrame.setTitle("Shortest distance");
-  
-  
-  galleryFrame.setPreferredSize(new Dimension(1200,800));         
-  JPanel galleryPanel = new JPanel (new GridBagLayout());
-  
-  JScrollPane scrollPane = new JScrollPane(galleryPanel,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-  scrollPane.setPreferredSize(new Dimension(600,800));            
-  galleryFrame.getContentPane().add(scrollPane);
-  galleryFrame.setVisible(true);
-  galleryFrame.setResizable(false);
-  
-   
-  GridBagConstraints gbc = new GridBagConstraints();
-  gbc.anchor = GridBagConstraints.WEST;
-  gbc.fill = GridBagConstraints.NONE;
-  gbc.insets = new Insets(5, 2, 5, 2);
-  
-  
-  
-  int i=0;
-  for (ImageNumberWithDistance  current : bestImages) {
-           
-    ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
-    ImageIcon picScaled = scaleImage(pic, 200, 200);
-    
-
-    JLabel label  =  new JLabel (current.getImageName() +" ("+current.getDistance()+")", picScaled, JLabel.CENTER);
-    label.setVerticalTextPosition(JLabel.BOTTOM);
-    label.setHorizontalTextPosition(JLabel.CENTER);
-    gbc.gridy = i/3;
-    gbc.gridheight = 1;
-    gbc.gridwidth = 1;          
-    galleryPanel.add( label,gbc);
-                    
-   i++;
-  }
-   
-   
-  
-  
-  
-  galleryFrame.add(scrollPane);
-  galleryFrame.pack();
-  galleryFrame.setVisible(true);
- 
-  
-
-}
-
-
-
   public static ImageIcon scaleImage(ImageIcon icon, int w, int h) {
     int nw = icon.getIconWidth();
     int nh = icon.getIconHeight();
@@ -308,6 +255,29 @@ public static void createGalleryOLD() {
 
     return new ImageIcon(icon.getImage().getScaledInstance(nw, nh, Image.SCALE_DEFAULT));
   }
+  
+  
+  class RenderGalleryImageThread extends Thread {  
+      JLabel label=null;
+      String imageFile = null;    
+    public RenderGalleryImageThread(String imageFile, JLabel label){
+        this.imageFile=imageFile;
+        this.label=label;
+        this.setPriority(Thread.MIN_PRIORITY);
+    }
+
+
+     boolean stop=false;
+     public void run() {
+        ImageIcon pic = new ImageIcon(imageFile);
+        ImageIcon picScaled = scaleImage(pic, 200, 200);
+        label.setIcon(picScaled);
+    }
+
+    public void interrupt(){
+        stop=true;       
+    }
+}
 
   
 
