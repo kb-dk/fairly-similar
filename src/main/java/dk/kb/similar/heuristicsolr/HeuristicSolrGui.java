@@ -2,6 +2,7 @@ package dk.kb.similar.heuristicsolr;
 
 
 import javafx.embed.swing.JFXPanel;
+import javafx.embed.swing.SwingFXUtils;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -67,7 +68,7 @@ public class HeuristicSolrGui extends JFrame {
   }
 
   public void createGui() {
-
+    JFXPanel t = new JFXPanel();
     JButton startButton;
 
     // create a new frame to store text field and button
@@ -272,16 +273,31 @@ class ImageClickedMouseListener implements MouseListener{
 
      boolean stop=false;
      public void run() {
-       new JFXPanel();
-       String imageURL = Path.of(imageFile).toString();
+       
+       try {
+         new JFXPanel();
+         /*
+         String imageURL = Path.of(imageFile).toUri().toURL().toString();
+       System.out.println("URL_"+imageURL);
        // Using JavaFX with requestedWidth & requestedHeight _should_ make intelligent load-time scaling of JPEGs
        javafx.scene.image.Image image = new javafx.scene.image.Image(imageURL, 200, 200, true, true);
 
-       ImageIcon pic = new ImageIcon(imageURL);
+       ImageIcon pic = new ImageIcon(image);
        //ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
        ImageIcon picScaled = scaleImage(pic, 200, 200);
 
        label.setIcon(picScaled);
+       label.repaint();
+       */
+         ImageIcon pic = new ImageIcon(imageFile);
+         ImageIcon picScaled = scaleImage(pic, 200, 200);
+         label.setIcon(picScaled);
+       
+       
+       }
+       catch(Exception e) {
+         e.printStackTrace();
+       }
     }
 
     public void interrupt(){
