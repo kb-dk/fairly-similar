@@ -94,6 +94,13 @@
       <type>pom</type>
     </dependency>
 
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-swing</artifactId>
+      <version>13.0.2</version>
+      <type>pom</type>
+    </dependency>
+
     <!-- SOLR -->
      
     <dependency>

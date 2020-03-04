@@ -1,6 +1,8 @@
 package dk.kb.similar.heuristicsolr;
 
 
+import javafx.embed.swing.JFXPanel;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -270,6 +272,7 @@ class ImageClickedMouseListener implements MouseListener{
 
      boolean stop=false;
      public void run() {
+       new JFXPanel();
        String imageURL = Path.of(imageFile).toString();
        // Using JavaFX with requestedWidth & requestedHeight _should_ make intelligent load-time scaling of JPEGs
        javafx.scene.image.Image image = new javafx.scene.image.Image(imageURL, 200, 200, true, true);
