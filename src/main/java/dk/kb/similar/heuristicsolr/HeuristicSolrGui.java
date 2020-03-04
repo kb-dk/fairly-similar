@@ -14,6 +14,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -269,9 +270,15 @@ class ImageClickedMouseListener implements MouseListener{
 
      boolean stop=false;
      public void run() {
-        ImageIcon pic = new ImageIcon(imageFile);
-        ImageIcon picScaled = scaleImage(pic, 200, 200);
-        label.setIcon(picScaled);
+       String imageURL = Path.of(imageFile).toString();
+       // Using JavaFX with requestedWidth & requestedHeight _should_ make intelligent load-time scaling of JPEGs
+       javafx.scene.image.Image image = new javafx.scene.image.Image(imageURL, 200, 200, true, true);
+
+       ImageIcon pic = new ImageIcon(imageURL);
+       //ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
+       ImageIcon picScaled = scaleImage(pic, 200, 200);
+
+       label.setIcon(picScaled);
     }
 
     public void interrupt(){
