@@ -11,10 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -33,16 +29,15 @@ import javax.swing.border.BevelBorder;
 
 public class HeuristicSolrGui extends JFrame {
 
+  private static final String imageFolder ="/media/teg/1200GB_SSD/display/";
   private static final long serialVersionUID = 1L;
   //  static String file = "/home/teg/workspace/fairly-similar/pixplot_vectors_270707.txt";
-  static String imageFileNames = "/home/teg/workspace/fairly-similar/files_fixed.txt";
   static JTextField textField;
   static SortedSet<ImageNumberWithDistance> bestImages = new TreeSet<ImageNumberWithDistance>();
   // Menu
   JMenuBar menuBar;
   JMenu jMenu_about;
   JMenuItem menuItem_info;
-  static HashMap<Integer, String> fileNames;
   private static HeuristicSolrGui gui;
 
   public static void main(String s[]) throws Exception {
@@ -58,10 +53,6 @@ public class HeuristicSolrGui extends JFrame {
     gui.pack();
     gui.setVisible(true);
     gui.setResizable(true);// todo change
-
-    // Load image file list
-    fileNames = loadFileNames(imageFileNames);
-    System.out.println(fileNames.size());
 
   }
 
@@ -118,10 +109,7 @@ public class HeuristicSolrGui extends JFrame {
 
         SortedSet<ImageNumberWithDistance> best = HeuristicSolrUtil.findAndListBestHeuristic(Integer.parseInt(lineNumber),200);
         
-        for (ImageNumberWithDistance current : best) {        
-          current.setFilePath( fileNames.get(current.getLineNumber()));
-        }
-
+        
         bestImages = best; // Now static variable that can be used by rendering frame
         createGallery();
         
@@ -158,13 +146,12 @@ public static void createGallery() {
       
       int i=0;
       for (ImageNumberWithDistance  current : bestImages) {
-        
-        
-        ImageIcon pic = new ImageIcon(current.getFilePath());
+               
+        ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
         ImageIcon picScaled = scaleImage(pic, 200, 200);
-        String [] tokens = current.getFilePath().split("/");
+        
 
-        JLabel label  =  new JLabel (tokens[tokens.length-1] +" ("+current.getDistance()+")", picScaled, JLabel.CENTER);
+        JLabel label  =  new JLabel (current.getImageName() +" ("+current.getDistance()+")", picScaled, JLabel.CENTER);
         label.setVerticalTextPosition(JLabel.BOTTOM);
         label.setHorizontalTextPosition(JLabel.CENTER);
         gbc.gridy = i/3;
@@ -204,22 +191,6 @@ public static void createGallery() {
     return new ImageIcon(icon.getImage().getScaledInstance(nw, nh, Image.SCALE_DEFAULT));
   }
 
-  public static HashMap<Integer, String> loadFileNames(String file) throws Exception {
-    System.out.println("reading fileNames file:" + file);
-    HashMap<Integer, String> imageMap = new HashMap<Integer, String>();
-    try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
-      String line;
-      int linesRead = 1;
-
-      while ((line = br.readLine()) != null) {
-        String lineFixed=line.substring(0, line.length() -4);
-        lineFixed=lineFixed.replace("image_vectors","display");
-        imageMap.put(linesRead,lineFixed);
-        linesRead++;
-      }
-
-    }
-    return imageMap;
-  }
+  
 
 }

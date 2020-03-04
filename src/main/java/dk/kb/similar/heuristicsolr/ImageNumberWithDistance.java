@@ -1,7 +1,7 @@
 package dk.kb.similar.heuristicsolr;
 
 public class ImageNumberWithDistance implements Comparable{
-private String filePath;
+private String imageName;
  private Double distance;
 private int lineNumber;
 
@@ -18,11 +18,12 @@ public void setLineNumber(int lineNumber) {
   this.lineNumber = lineNumber;
 }
 
-public String getFilePath() {
-  return filePath;
+
+public String getImageName() {
+  return imageName;
 }
-public void setFilePath(String filePath) {
-  this.filePath = filePath;
+public void setImageName(String imageName) {
+  this.imageName = imageName;
 }
 @Override
 public int hashCode() {

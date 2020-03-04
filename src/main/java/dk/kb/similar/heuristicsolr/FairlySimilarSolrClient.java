@@ -41,13 +41,19 @@ public class FairlySimilarSolrClient {
     solrServer.add(doc);  
   }
   
+  public void indexVectorJson(int id,String path, String imageName, String coordinates, boolean[] thresholds, int trues, double lengthSquared,  ArrayList<String> designations) throws Exception{
+    SolrInputDocument doc = createDocJson(id, path, imageName,coordinates,thresholds, trues, lengthSquared, designations);
+    solrServer.add(doc);  
+  }
+  
   public  SolrInputDocument createDoc(int id, String coordinates, boolean[] thresholds,int trues,double lengthSquared){
     SolrInputDocument doc = new SolrInputDocument();
 
       doc.setField("id",id);
-      doc.setField("coordinates",coordinates);
+      doc.setField("coordinates",coordinates);      
       doc.setField("lengthsquared",lengthSquared);
       doc.setField("thresholds", trues);
+
       for (int i =0;i<thresholds.length ; i++) {
        doc.setField(i+"_threshold",thresholds[i]);//Dynamic field                 
      }
@@ -55,6 +61,27 @@ public class FairlySimilarSolrClient {
     return doc;
   }
   
+  public  SolrInputDocument createDocJson(int id, String path, String imageName,String coordinates, boolean[] thresholds,int trues,double lengthSquared, ArrayList<String> designations){
+    SolrInputDocument doc = new SolrInputDocument();
+
+      doc.setField("id",id);
+      doc.setField("coordinates",coordinates);
+      doc.setField("lengthsquared",lengthSquared);
+      doc.setField("path", path);
+      doc.setField("imagename", imageName);
+      doc.setField("thresholds", trues);
+      for (String designation : designations) {
+        doc.addField("designation", designation);
+      }
+      
+      for (int i =0;i<thresholds.length ; i++) {
+       doc.setField(i+"_threshold",thresholds[i]);//Dynamic field                 
+     }
+          
+    return doc;
+  }
+
+  /*
   public ArrayList<String> getBestMatchIds(String query, int numberOfResults) throws Exception{
     
     SolrQuery solrQuery = new  SolrQuery();        
@@ -73,6 +100,7 @@ public class FairlySimilarSolrClient {
             
     return ids;     
   }
+  */
   
 public ArrayList<SolrDocument> query(String query, int numberOfResults) throws Exception{    
     long start = System.currentTimeMillis();

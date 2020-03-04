@@ -81,6 +81,13 @@
       <version>1.25</version>
     </dependency>
 
+   <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+     <version>20190722</version>
+   </dependency>
+
+
     <!-- SOLR -->
      
     <dependency>

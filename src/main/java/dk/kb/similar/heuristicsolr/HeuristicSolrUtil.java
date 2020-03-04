@@ -1,38 +1,50 @@
 package dk.kb.similar.heuristicsolr;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.solr.common.SolrDocument;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import dk.kb.similar.heuristicsolr.JsonLineParsed.Prediction;
 
  
 
 public class HeuristicSolrUtil {
 
-  static String dataFile = "/home/teg/workspace/fairly-similar/src/main/resources/pixplot_vectors_270707.txt";
-
+  //static String dataFile = "/home/teg/workspace/fairly-similar/src/main/resources/pixplot_vectors_270707.txt";
+  static String jsonDataFile = "/home/teg/workspace/fairly-similar/data/kb_all_lines.json";
+  static String jsonTestDataFile = "/home/teg/workspace/fairly-similar/data/single.jsonX";
   public static void main(String[] args) throws Exception {
     int testId = 116530;
    
-    // indexFile(file);
-   //findAndListBestBruteForce(testId, 20);
+     indexJsonFile(jsonDataFile);
+   
+   /*  
+   findAndListBestBruteForce(testId, 20);
     SortedSet<ImageNumberWithDistance> findAndListBestHeuristic = findAndListBestHeuristic(testId, 20);
    
    
     for (ImageNumberWithDistance c : findAndListBestHeuristic) {
       System.out.println(c.getLineNumber() + ":" + c.getDistance());
     }
-   
+   */
   }
   
 
-  public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristic(int testId, int numberOfBest) throws Exception {
-    double[] orgCoords = getCoordsFromLine(dataFile, testId);
-    return findAndListBestHeuristic(testId, orgCoords, numberOfBest);   
+  public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristic(int id, int numberOfBest) throws Exception {
+    double[] orgCoords = getCoordsFromLine(jsonDataFile, id);
+    return findAndListBestHeuristic(id, orgCoords, numberOfBest);   
   }
 
   public static    SortedSet<ImageNumberWithDistance> findAndListBestHeuristic(int testId,double[] orgCoords, int numberOfBest) throws Exception {
@@ -47,14 +59,15 @@ public class HeuristicSolrUtil {
     
       long time = System.currentTimeMillis();
     ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().query(query, 2000);
-         System.out.println(System.currentTimeMillis() - time);
+         System.out.println("Solr query time:"+ (System.currentTimeMillis() - time));
          
     // Calculate distance for Solr hits, see if it finds low distance candidates
     SortedSet<ImageNumberWithDistance> findBestHeuristic = new TreeSet<ImageNumberWithDistance>();
     for (SolrDocument doc : docs) {
       String id = (String) doc.getFieldValue("id");
       String coordStr = (String) doc.getFieldValue("coordinates");
-
+      String imageName = (String) doc.getFieldValue("imagename");
+      
       double[] coords = convertLineToVector(coordStr);
       // int overlap = countBitMapOverlapFromSolr(""+testId, id);
       double dist = getDistanceSquared(orgCoords, coords);
@@ -62,7 +75,8 @@ public class HeuristicSolrUtil {
       ImageNumberWithDistance img = new ImageNumberWithDistance();
       img.setDistance(dist);
       img.setLineNumber(Integer.parseInt(id));
-
+      img.setImageName(imageName);
+      
       if (findBestHeuristic.size() < numberOfBest) {
         findBestHeuristic.add(img);
       } else if (img.getDistance() < findBestHeuristic.last().getDistance()) {
@@ -93,24 +107,21 @@ public class HeuristicSolrUtil {
       return ids;
   }
   
-  public static void findAndListBestBruteForce(int testId, int numberOfBest) throws Exception {
-    double[] orgCoords = getCoordsFromLine(dataFile, testId);
+  /*
+  public static void findAndListBestBruteForce(int id, int numberOfBest) throws Exception {
+    double[] orgCoords = getCoordsFromLine(dataFile, id);
     SortedSet<ImageNumberWithDistance> findBestBruteForce = findBestBruteForce(orgCoords, numberOfBest, dataFile);
     for (ImageNumberWithDistance c : findBestBruteForce) {
       System.out.println(c.getLineNumber() + ":" + c.getDistance());
     }
   }
+*/
 
   public static void indexFile(String file) throws Exception {
     FairlySimilarSolrClient solrClient = FairlySimilarSolrClient.getInstance();
     try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
-
-      // Something to tweak.
-      // value of 1.2 gives about ~55 coordinates
-      // value of 1.5 gives ~20
-      final double THRESHOLD = 1.5d; //
-
+ 
       int linesRead = 1;
       while ((line = br.readLine()) != null) {
         double lengthSquared = lengthSquared(line);
@@ -128,6 +139,78 @@ public class HeuristicSolrUtil {
     }
   }
 
+  public static void indexJsonFile(String file) throws Exception {
+    FairlySimilarSolrClient solrClient = FairlySimilarSolrClient.getInstance();
+    try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
+      String line;
+      int linesRead = 0;
+      while ((line = br.readLine()) != null) {
+         JsonLineParsed parsed = parseJson(line);
+
+         double lengthSquared= 0d;
+         for (double coord : parsed.getVector()) {
+           lengthSquared += coord*coord;
+         }                 
+         
+
+        double[] coords = parsed.getVector(); 
+
+        // below are two different methods to build bitmap. First takes all over
+        // a threshold. Second extract a given number with maximum.
+        // boolean[] bitmap = buildThresholdBitmapFromLine(line, THRESHOLD);
+        boolean[] bitmap = getBitmapForMaxMarkers(coords, 20);
+
+        int trues = countTrues(bitmap);
+        StringBuffer coordsBuffer = new StringBuffer(); //solr coordinates seperated by space
+        for (double coord: coords) {
+          coordsBuffer.append(coord +" ");
+        }
+        ArrayList<String> designations = new ArrayList<String>();
+        for (Prediction p : parsed.getPredictions()) {
+          designations.add(p.getDesignation());
+        }        
+        solrClient.indexVectorJson(linesRead,parsed.getPath(), parsed.getImageName(),coordsBuffer.toString(), bitmap, trues, lengthSquared, designations);
+        linesRead++;        
+      }
+      solrClient.commit();
+    }
+  }
+  
+  public static JsonLineParsed parseJson(String json) {
+    JsonLineParsed parsed = new JsonLineParsed();
+    JSONObject obj = new JSONObject(json);
+    
+    String path =obj.getString("path");
+    parsed.setPath(path);
+    String[] tokens = path.split("/");
+    parsed.setImageName(tokens[tokens.length-1]);
+    
+    ArrayList<Prediction> predictionsList= new ArrayList<Prediction>();
+    parsed.setPredictions(predictionsList);
+    JSONArray predictions = obj.getJSONArray("predictions");
+    
+    for (int i = 0; i < predictions.length(); i++)
+    {
+        String designation= predictions.getJSONObject(i).getString("designation");        
+        double probability= predictions.getJSONObject(i).getDouble("probability");        
+        
+        Prediction prediction = parsed.new Prediction();
+        prediction.setDesignation(designation);
+        prediction.setProbability(probability);
+        predictionsList.add(prediction);
+    }
+
+    JSONArray vector = obj.getJSONArray("vector");
+    double[] coords = new double[vector.length()];
+   parsed.setVector(coords);
+   for (int i = 0; i < vector.length(); i++)
+   {
+        coords[i]=vector.getDouble(i);                           
+    }
+    
+   return parsed; 
+  }
+  
   public static boolean[] getBitMapForLine(String file, int lineNumber) throws Exception {
     try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
@@ -160,7 +243,9 @@ public class HeuristicSolrUtil {
         }
         linesRead++;
       }
-      return convertLineToVector(line);
+      JsonLineParsed parsed = parseJson(line);
+      System.out.println("parsed:"+parsed.getImageName());
+      return parsed.getVector();
     }
   }
 
@@ -269,7 +354,7 @@ public class HeuristicSolrUtil {
   }
 
   public static double[] convertLineToVector(String line) {
-    double[] vec = new double[2048];
+    double[] vec = new double[4096];
     String[] coords = line.split(" ");
     int index = 0;
     for (String coord : coords) {
@@ -299,7 +384,7 @@ public class HeuristicSolrUtil {
       }
 
     }
-    boolean[] bitmap = new boolean[2048];
+    boolean[] bitmap = new boolean[coords.length];
 
     for (ImageNumberWithDistance t : set) {
       bitmap[t.getLineNumber()] = true;
@@ -342,6 +427,9 @@ public class HeuristicSolrUtil {
     return set;
   }
 
+  
+  
+  
   /*
   /*
    * Little complex method to best k hits in linear time. Not used yet.
