@@ -54,7 +54,7 @@ public class HeuristicSolrGui extends JFrame {
       }
     });
 
-    gui.setTitle("FairySimilar Swing Gui by TEG");
+    gui.setTitle("FairlySimilar Swing Gui by TEG");
     gui.init();
     gui.pack();
     gui.setVisible(true);
@@ -124,19 +124,22 @@ public class HeuristicSolrGui extends JFrame {
 
         String match = (String) matchTypeBox.getSelectedItem();
         
-        System.out.println(match);
-        
         if (match.equals(matchTypes[0])) {
-           SortedSet<ImageNumberWithDistance> best = HeuristicSolrUtil.findAndListBestHeuristicMarkers(Integer.parseInt(lineNumber),200);
-           bestImages = best; // Now static variable that can be used by rendering frame
-           createGallery();
+          System.out.println("heuristicmarkers selected");
+          SortedSet<ImageNumberWithDistance> best = HeuristicSolrUtil.findAndListBestHeuristicMarkers(Integer.parseInt(lineNumber),200);
+           bestImages = best; // Now static variable that can be used by rendering frame        
         }
         else if (match.equals(matchTypes[1])) {
-          HeuristicSolrUtil.findAndListBestHeuristicPredictions(Integer.parseInt(lineNumber),200);
           System.out.println("predictions selected");
-          
+          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicPredictions(Integer.parseInt(lineNumber),200);          
+          bestImages = best; // Now static variable that can be used by rendering frame          
         }
-        
+        else if (match.equals(matchTypes[2])) {
+          System.out.println("mixed selected");
+          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicMixed(Integer.parseInt(lineNumber),200);          
+          bestImages = best; // Now static variable that can be used by rendering frame          
+        }
+        createGallery();
    
         
       } catch (Exception ex) {
@@ -170,9 +173,7 @@ public  void createGallery() {
         gbc.gridy = i/4;
         gbc.gridheight = 1;
         gbc.gridwidth = 1;          
-        galleryPanel.add( label,gbc);
-      
-        
+        galleryPanel.add( label,gbc); 
         label.addMouseListener(new ImageClickedMouseListener(current.getImageName()));
         
        i++;

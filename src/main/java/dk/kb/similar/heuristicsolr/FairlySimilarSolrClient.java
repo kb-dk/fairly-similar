@@ -102,14 +102,19 @@ public class FairlySimilarSolrClient {
   }
   */
   
-public ArrayList<SolrDocument> query(String query, int numberOfResults) throws Exception{    
-    long start = System.currentTimeMillis();
+public ArrayList<SolrDocument> query(String query, int numberOfResults, boolean includeCoordinates) throws Exception{    
+   System.out.println(query);   
     SolrQuery solrQuery = new  SolrQuery();        
     solrQuery.setQuery(query);
+    if (!includeCoordinates) {
+      solrQuery.setFields(new String[] {"id","designation", "path","imagename"}); 
+    }
+    
     solrQuery.setRows(numberOfResults);    
-System.out.println(query);
+
     QueryResponse rsp =  solrServer.query(solrQuery);    
     SolrDocumentList docs = rsp.getResults();                            
+    
     //System.out.println("Solr client query time:"+(System.currentTimeMillis() - start));
     return docs;     
   }

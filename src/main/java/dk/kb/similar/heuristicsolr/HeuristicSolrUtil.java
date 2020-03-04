@@ -26,9 +26,8 @@ public class HeuristicSolrUtil {
   static String jsonDataFile = "/home/teg/workspace/fairly-similar/data/kb_all_lines.json";
   static String jsonTestDataFile = "/home/teg/workspace/fairly-similar/data/single.jsonX";
   public static void main(String[] args) throws Exception {
-    int testId = 116530;
-   
-     indexJsonFile(jsonDataFile);
+      
+     //indexJsonFile(jsonDataFile);
    
    /*  
    findAndListBestBruteForce(testId, 20);
@@ -52,6 +51,11 @@ public class HeuristicSolrUtil {
     return findAndListBestHeuristicPredictions( predictions , numberOfBest);   
   }
   
+  public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristicMixed(int id, int numberOfBest) throws Exception {
+     JsonLineParsed parsed = getParseJsonFromLine(jsonDataFile, id);
+   return findAndListBestHeuristicMixed(parsed.getVector(), parsed.getPredictions() , numberOfBest);   
+ }
+  
   public static    SortedSet<ImageNumberWithDistance> findAndListBestHeuristicMarkers(double[] orgCoords, int numberOfBest) throws Exception {
     //System.out.println("id:"+testId +" : coords:"+Arrays.toString(orgCoords));
     
@@ -63,7 +67,7 @@ public class HeuristicSolrUtil {
 
     
       long time = System.currentTimeMillis();
-    ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().query(query, 2000);
+    ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().query(query, 2000,true);
          System.out.println("Solr query time:"+ (System.currentTimeMillis() - time));
          
     // Calculate distance for Solr hits, see if it finds low distance candidates
@@ -105,18 +109,16 @@ public class HeuristicSolrUtil {
          
      }
       query.append("designation:\"none\""); //finish line
-    
-      System.out.println(query);
-      if (true) {
-      return new TreeSet<ImageNumberWithDistance>();
-      }
+          
+      
     
       long time = System.currentTimeMillis();
-      ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().query(query.toString(), hits);
+      ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().query(query.toString(), hits,false);
       System.out.println("Solr query time:"+ (System.currentTimeMillis() - time));
          
     // Calculate distance for Solr hits, see if it finds low distance candidates
     SortedSet<ImageNumberWithDistance> predictionHits = new TreeSet<ImageNumberWithDistance>();
+     double distance =1; // just keep order
     for (SolrDocument doc : docs) {
       String id = (String) doc.getFieldValue("id");
       String imageName = (String) doc.getFieldValue("imagename");
@@ -124,11 +126,53 @@ public class HeuristicSolrUtil {
       ImageNumberWithDistance img = new ImageNumberWithDistance();
       img.setLineNumber(Integer.parseInt(id));
       img.setImageName(imageName);
+      img.setDistance(distance++); 
       predictionHits.add(img);
     }
         
     return predictionHits;
   }
+  
+  public static    SortedSet<ImageNumberWithDistance> findAndListBestHeuristicMixed( double[] coordinates ,ArrayList<Prediction> predictions, int hits) throws Exception {
+    //System.out.println("id:"+testId +" : coords:"+Arrays.toString(orgCoords));
+    
+   StringBuilder query =  new StringBuilder();//buildOrQueriesFromBitmap(bitMapMarker);
+   query.append("(");
+   for (Prediction p : predictions) {
+      query.append("designation:\""+p.getDesignation()+"\"^"+p.getProbability()*30+" OR "  ); //boost 30 so it compare to bitmap score
+         
+     }
+      query.append("designation:\"none\""); //finish line
+      query.append(")");
+      boolean[] bitMapMarkers = getBitmapForMaxMarkers(coordinates, 40);
+
+      String bitmapQuery = buildOrQueriesFromBitmap(bitMapMarkers);
+                 
+      query.append (" AND ");
+      query.append(bitmapQuery);
+    
+      
+      long time = System.currentTimeMillis();
+      ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().query(query.toString(), hits,false);
+      System.out.println("Solr query time:"+ (System.currentTimeMillis() - time));
+         
+    // Calculate distance for Solr hits, see if it finds low distance candidates
+    SortedSet<ImageNumberWithDistance> predictionHits = new TreeSet<ImageNumberWithDistance>();
+     double distance =1; // just keep order
+    for (SolrDocument doc : docs) {
+      String id = (String) doc.getFieldValue("id");
+      String imageName = (String) doc.getFieldValue("imagename");
+
+      ImageNumberWithDistance img = new ImageNumberWithDistance();
+      img.setLineNumber(Integer.parseInt(id));
+      img.setImageName(imageName);
+      img.setDistance(distance++); 
+      predictionHits.add(img);
+    }
+        
+    return predictionHits;
+  }
+  
   
   public static  ArrayList<String> getIdsForBestHeuristic(int testId,double[] orgCoords, int solrResults) throws Exception {
     
@@ -252,31 +296,13 @@ public class HeuristicSolrUtil {
    return parsed; 
   }
   
-  public static boolean[] getBitMapForLine(String file, int lineNumber) throws Exception {
-    try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
-      String line;
-      final double THRESHOLD = 1.5d; // Something to tweak. value of 1.2 gives
-      // ~50 coordinate over threshold
-      int linesRead = 1;
-      while ((line = br.readLine()) != null) {
-        if (linesRead == lineNumber) {
-          break;
-        }
-        linesRead++;
-      }
-
-      boolean[] bitmap = buildThresholdBitmapFromLine(line, THRESHOLD);
-      return bitmap;
-    }
-
-  }
-
+ 
   public static JsonLineParsed getParseJsonFromLine(String file, int lineNumber) throws Exception {
 
     try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
 
-      // ~50 coordinate over threshold
+
       int linesRead = 1;
       while ((line = br.readLine()) != null) {
         if (linesRead == lineNumber) {
@@ -311,7 +337,7 @@ public class HeuristicSolrUtil {
         builder.append(i + "_threshold:true OR ");
       }
     }
-    builder.append("ID:NONE"); // Lazy, just ending the ORS
+    builder.append("id:NONE"); // Lazy, just ending the ORS
     builder.append(")");
     
 
@@ -331,7 +357,7 @@ public class HeuristicSolrUtil {
   //Not used. Constant numbers of markers was a better strategy
   private static boolean[] buildThresholdBitmapFromLine(String line, double threshold) {
     String[] coords = line.split(" ");
-    boolean[] thresholdBitmap = new boolean[2048];
+    boolean[] thresholdBitmap = new boolean[4096];
     int coordNumber = 0;
     for (String coord : coords) {
       double parseDouble = Double.parseDouble(coord);
@@ -348,7 +374,7 @@ public class HeuristicSolrUtil {
 
     int matches = 0;
 
-    for (int i = 0; i < 2048; i++) {
+    for (int i = 0; i < 4096; i++) {
       if (b1[i] && b2[i]) {
         matches++;
       }
@@ -366,11 +392,11 @@ public class HeuristicSolrUtil {
     FairlySimilarSolrClient client = FairlySimilarSolrClient.getInstance();
     String query1 = "id:" + id1;
     String query2 = "id:" + id2;
-    SolrDocument doc1 = client.query(query1, 1).get(0);
-    SolrDocument doc2 = client.query(query2, 1).get(0);
+    SolrDocument doc1 = client.query(query1, 1,true).get(0);
+    SolrDocument doc2 = client.query(query2, 1,true).get(0);
 
     int matches = 0;
-    for (int i = 0; i < 2048; i++) {
+    for (int i = 0; i < 4096; i++) {
       boolean b1 = (Boolean) doc1.getFieldValue(i + "_threshold");
       boolean b2 = (Boolean) doc2.getFieldValue(i + "_threshold");
       if (b1 && b2) {
