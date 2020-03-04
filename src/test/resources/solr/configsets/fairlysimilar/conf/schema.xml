@@ -9,10 +9,10 @@
   <fields>
     <!-- Solr-internal fields -->
    <field name="_version_"        type="plong" indexed="false" stored="false"/>
-   <field name="id"               type="string" stored="true" required="true" />
-   <field name="thresholds"       type="int" stored="true" required="true" />  
+   <field name="id"               type="string" stored="true" required="true" />  
    <field name="lengthsquared"    type="double" stored="true" required="true" /> 
    <field name="coordinates"      type="string" stored="true" indexed="false" required="true" /> 
+   <field name="designation"      type="string" stored="true" indexed="true" multiValued = "true" />
 
    <!-- for coordinates thresholds-->
    <dynamicField name="*_threshold" type="boolean" indexed="true"  stored="true"/>

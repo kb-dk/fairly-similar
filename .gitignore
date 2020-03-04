@@ -12,3 +12,4 @@
 .classpath
 .settings/
 test-output/
+/data/

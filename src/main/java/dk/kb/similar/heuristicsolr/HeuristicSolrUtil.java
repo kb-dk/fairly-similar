@@ -23,7 +23,7 @@ import dk.kb.similar.heuristicsolr.JsonLineParsed.Prediction;
 public class HeuristicSolrUtil {
 
   //static String dataFile = "/home/teg/workspace/fairly-similar/src/main/resources/pixplot_vectors_270707.txt";
-  static String jsonDataFile = "/home/teg/workspace/fairly-similar/data/kb_all_lines.json";
+  static String jsonDataFile = "/home/abr/projects/fairly-similar/data/kb_all_lines.json";
   static String jsonTestDataFile = "/home/teg/workspace/fairly-similar/data/single.jsonX";
   public static void main(String[] args) throws Exception {
       

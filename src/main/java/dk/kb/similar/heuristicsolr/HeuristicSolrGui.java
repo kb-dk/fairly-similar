@@ -4,6 +4,9 @@ package dk.kb.similar.heuristicsolr;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swing.SwingFXUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -37,7 +40,11 @@ import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
 public class HeuristicSolrGui extends JFrame {
+
   private static DecimalFormat df2 = new DecimalFormat("#.##");
+
+  private Logger log = LoggerFactory.getLogger(HeuristicSolrGui.class);
+
   private static final String imageFolder ="/media/teg/1200GB_SSD/display/";
   private static final long serialVersionUID = 1L;
   //  static String file = "/home/teg/workspace/fairly-similar/pixplot_vectors_270707.txt";
@@ -123,30 +130,33 @@ public class HeuristicSolrGui extends JFrame {
   }
 
   
-   
+  
   class FindImagesAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
-      try {                
+      try {
         String lineNumber = textField.getText();
 
         String match = (String) matchTypeBox.getSelectedItem();
         
+        log.info(match);
+        
         if (match.equals(matchTypes[0])) {
           System.out.println("heuristicmarkers selected");
           SortedSet<ImageNumberWithDistance> best = HeuristicSolrUtil.findAndListBestHeuristicMarkers(Integer.parseInt(lineNumber),200);
-           bestImages = best; // Now static variable that can be used by rendering frame        
+           bestImages = best; // Now static variable that can be used by rendering frame
         }
         else if (match.equals(matchTypes[1])) {
           System.out.println("predictions selected");
-          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicPredictions(Integer.parseInt(lineNumber),200);          
-          bestImages = best; // Now static variable that can be used by rendering frame          
+          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicPredictions(Integer.parseInt(lineNumber),200);
+          bestImages = best; // Now static variable that can be used by rendering frame
         }
         else if (match.equals(matchTypes[2])) {
           System.out.println("mixed selected");
-          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicMixed(Integer.parseInt(lineNumber),200);          
-          bestImages = best; // Now static variable that can be used by rendering frame          
+          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicMixed(Integer.parseInt(lineNumber),200);
+          bestImages = best; // Now static variable that can be used by rendering frame
         }
+        bestImages.stream().limit(10).forEach(image -> log.info("{}  {}", image.getLineNumber()+1, image.getDistance()));
         createGallery();
    
         
@@ -166,22 +176,24 @@ public  void createGallery() {
       gbc.insets = new Insets(5, 2, 5, 2);
       
       int i=0;
+
       for (ImageNumberWithDistance  current : bestImages) {       
         String score2Digits=df2.format(current.getDistance());
         JLabel label  = new JLabel (current.getImageName() +" ("+ score2Digits+")", new ImageIcon(new BufferedImage(200,200,BufferedImage.TYPE_INT_ARGB)), JLabel.CENTER);                
+
         label.setVerticalTextPosition(JLabel.BOTTOM);
         label.setHorizontalTextPosition(JLabel.CENTER);
         gbc.gridy = i/4;
         gbc.gridheight = 1;
         gbc.gridwidth = 1;          
-        galleryPanel.add( label,gbc); 
+        galleryPanel.add( label,gbc);
         label.addMouseListener(new ImageClickedMouseListener(current.getImageName()));
         RenderGalleryImageThread thread = new RenderGalleryImageThread(imageFolder +current.getImageName(),label);
         thread.start();
         
        i++;
       }
-       
+      
       galleryPanel.revalidate();
 
   }
@@ -192,7 +204,7 @@ class CloseFramedMouseListener implements MouseListener{
   public CloseFramedMouseListener( JFrame frame ) {
     this.frame=frame;
   }
-    
+  
   @Override
   public void mouseClicked(MouseEvent m) {
    frame.dispose();
@@ -237,13 +249,13 @@ class ImageClickedMouseListener implements MouseListener{
 
     System.out.println("Clicked image:"+image);
     JFrame singleImageFrame = new JFrame();
-    singleImageFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect           
+    singleImageFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect
     ImageIcon imageFull = new ImageIcon(imageFolder +image);
-    JLabel label  =  new JLabel (imageFull);                        
+    JLabel label  =  new JLabel (imageFull);
     label.addMouseListener(new CloseFramedMouseListener(singleImageFrame));
     singleImageFrame.getContentPane().add(label);
-    singleImageFrame.pack(); 
-    singleImageFrame.setVisible(true); 
+    singleImageFrame.pack();
+    singleImageFrame.setVisible(true);
  
   }
 
@@ -291,9 +303,9 @@ class ImageClickedMouseListener implements MouseListener{
   }
   
   
-  class RenderGalleryImageThread extends Thread {  
+  class RenderGalleryImageThread extends Thread {
       JLabel label=null;
-      String imageFile = null;    
+      String imageFile = null;
     public RenderGalleryImageThread(String imageFile, JLabel label){
         this.imageFile=imageFile;
         this.label=label;
@@ -331,10 +343,10 @@ class ImageClickedMouseListener implements MouseListener{
     }
 
     public void interrupt(){
-        stop=true;       
+        stop=true;
     }
 }
 
-  
+
 
 }
