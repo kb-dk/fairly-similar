@@ -121,10 +121,15 @@ public class HeuristicSolrGui extends JFrame {
 
   }
 
+  
+   
   class FindImagesAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
       try {
+        
+        
+        Thread.sleep(10000L);
         String lineNumber = textField.getText();
 
         String match = (String) matchTypeBox.getSelectedItem();
@@ -167,11 +172,8 @@ public  void createGallery() {
       
       
       int i=0;
-      for (ImageNumberWithDistance  current : bestImages) {
-               
-              
-         System.out.println("added image");
-         JLabel label  = new JLabel (current.getImageName() +" ("+current.getDistance()+")", new ImageIcon(new BufferedImage(200,200,BufferedImage.TYPE_INT_ARGB)), JLabel.CENTER);                
+      for (ImageNumberWithDistance  current : bestImages) {                            
+        JLabel label  = new JLabel (current.getImageName() +" ("+current.getDistance()+")", new ImageIcon(new BufferedImage(200,200,BufferedImage.TYPE_INT_ARGB)), JLabel.CENTER);                
         label.setVerticalTextPosition(JLabel.BOTTOM);
         label.setHorizontalTextPosition(JLabel.CENTER);
         gbc.gridy = i/4;
@@ -277,8 +279,8 @@ class ImageClickedMouseListener implements MouseListener{
        try {
          new JFXPanel();
          
-         String imageURL = Path.of(imageFile).toUri().toURL().toString();
-       System.out.println("URL_"+imageURL);
+        String imageURL = Path.of(imageFile).toUri().toURL().toString();
+
        // Using JavaFX with requestedWidth & requestedHeight _should_ make intelligent load-time scaling of JPEGs
        javafx.scene.image.Image image = new javafx.scene.image.Image(imageURL, 200, 200, true, true);
 
