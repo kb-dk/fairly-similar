@@ -23,7 +23,7 @@ import dk.kb.similar.heuristicsolr.JsonLineParsed.Prediction;
 public class HeuristicSolrUtil {
 
   //static String dataFile = "/home/teg/workspace/fairly-similar/src/main/resources/pixplot_vectors_270707.txt";
-  static String jsonDataFile = "/home/abr/projects/fairly-similar/data/kb_all_lines.json";
+  static String jsonDataFile = "/home/teg/workspace/fairly-similar/data/kb_all_lines.json";
   static String jsonTestDataFile = "/home/teg/workspace/fairly-similar/data/single.jsonX";
   public static void main(String[] args) throws Exception {
       
@@ -55,6 +55,33 @@ public class HeuristicSolrUtil {
      JsonLineParsed parsed = getParseJsonFromLine(jsonDataFile, id);
    return findAndListBestHeuristicMixed(parsed.getVector(), parsed.getPredictions() , numberOfBest);   
  }
+  
+  public static SortedSet<ImageNumberWithDistance> findRandomImages( int numberOfBest) throws Exception {
+    
+    StringBuilder b = new StringBuilder();
+    b.append("id:(");
+    for (int i =0;i<numberOfBest;i++) {
+       b.append((int) (Math.random()*270707) +" OR ");
+    }    
+    b.append(" 3000000)");
+    
+    ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().query(b.toString(), numberOfBest,false);
+    
+    SortedSet<ImageNumberWithDistance> predictionHits = new TreeSet<ImageNumberWithDistance>();
+    double dist =1d;
+    for (SolrDocument doc : docs) {
+     String id = (String) doc.getFieldValue("id");
+     String imageName = (String) doc.getFieldValue("imagename");
+
+     ImageNumberWithDistance img = new ImageNumberWithDistance();
+     img.setLineNumber(Integer.parseInt(id));
+     img.setImageName(imageName);
+     img.setDistance(dist++); 
+     predictionHits.add(img);
+   }
+       
+   return predictionHits;   
+}
   
   public static    SortedSet<ImageNumberWithDistance> findAndListBestHeuristicMarkers(double[] orgCoords, int numberOfBest) throws Exception {
     //System.out.println("id:"+testId +" : coords:"+Arrays.toString(orgCoords));

@@ -56,7 +56,7 @@ public class HeuristicSolrGui extends JFrame {
   JMenuItem menuItem_info;
   private static HeuristicSolrGui gui;
   private static JPanel galleryPanel = new JPanel (new GridBagLayout()); 
-  String[] matchTypes = { "Nearest", "Predictions" , "Mixed"};  
+  String[] matchTypes = { "Nearest", "Predictions" , "Mixed", "Random"};  
   JComboBox<String> matchTypeBox = new JComboBox<String>(matchTypes);
   
   public static void main(String s[]) throws Exception {
@@ -156,6 +156,12 @@ public class HeuristicSolrGui extends JFrame {
           SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicMixed(Integer.parseInt(lineNumber),200);
           bestImages = best; // Now static variable that can be used by rendering frame
         }
+        else if (match.equals(matchTypes[3])) {
+          System.out.println("Random");
+          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findRandomImages(200);
+          bestImages = best; // Now static variable that can be used by rendering frame
+        }
+        
         bestImages.stream().limit(10).forEach(image -> log.info("{}  {}", image.getLineNumber()+1, image.getDistance()));
         createGallery();
    
