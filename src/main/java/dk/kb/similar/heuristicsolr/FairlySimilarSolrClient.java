@@ -2,14 +2,13 @@ package dk.kb.similar.heuristicsolr;
 
 import java.util.ArrayList;
 
+
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-
 
 /*/
  * Optimize index with:  curl 'http://localhost:8983/solr/fairlysimilar/update?optimize=true&maxSegments=1&waitFlush=false'
@@ -70,6 +69,7 @@ public class FairlySimilarSolrClient {
       doc.setField("path", path);
       doc.setField("imagename", imageName);
       doc.setField("thresholds", trues);
+            
       for (String designation : designations) {
         doc.addField("designation", designation);
       }
@@ -102,14 +102,24 @@ public class FairlySimilarSolrClient {
   }
   */
   
-public ArrayList<SolrDocument> query(String query, int numberOfResults) throws Exception{    
-    long start = System.currentTimeMillis();
+public ArrayList<SolrDocument> query(String query, int numberOfResults, boolean includeCoordinates) throws Exception{    
+   System.out.println(query);   
     SolrQuery solrQuery = new  SolrQuery();        
     solrQuery.setQuery(query);
+
+     //We never extract the dynamic field *_threshold
+    if (!includeCoordinates) {
+      solrQuery.setFields(new String[] {"id","designation", "path","imagename"}); 
+    }
+    else {
+      solrQuery.setFields(new String[] {"id","designation", "path","imagename","coordinates"}); 
+    }
+    
     solrQuery.setRows(numberOfResults);    
-System.out.println(query);
+
     QueryResponse rsp =  solrServer.query(solrQuery);    
     SolrDocumentList docs = rsp.getResults();                            
+    
     //System.out.println("Solr client query time:"+(System.currentTimeMillis() - start));
     return docs;     
   }

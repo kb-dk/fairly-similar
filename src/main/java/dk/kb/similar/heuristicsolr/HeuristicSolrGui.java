@@ -1,6 +1,9 @@
 package dk.kb.similar.heuristicsolr;
 
 
+import javafx.embed.swing.JFXPanel;
+import javafx.embed.swing.SwingFXUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +19,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -34,11 +39,9 @@ import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
 public class HeuristicSolrGui extends JFrame {
-
-  
   private Logger log = LoggerFactory.getLogger(HeuristicSolrGui.class);
-  
-  private static final String imageFolder ="/home/abr/display/";
+
+  private static final String imageFolder ="/media/teg/1200GB_SSD/display/";
   private static final long serialVersionUID = 1L;
   //  static String file = "/home/teg/workspace/fairly-similar/pixplot_vectors_270707.txt";
   static JTextField textField;
@@ -60,7 +63,7 @@ public class HeuristicSolrGui extends JFrame {
       }
     });
 
-    gui.setTitle("FairySimilar Swing Gui by TEG");
+    gui.setTitle("FairlySimilar Swing Gui by TEG");
     gui.init();
     gui.pack();
     gui.setVisible(true);
@@ -69,7 +72,7 @@ public class HeuristicSolrGui extends JFrame {
   }
 
   public void createGui() {
-
+    JFXPanel t = new JFXPanel();
     JButton startButton;
 
     // create a new frame to store text field and button
@@ -122,6 +125,8 @@ public class HeuristicSolrGui extends JFrame {
 
   }
 
+  
+  
   class FindImagesAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
@@ -130,20 +135,25 @@ public class HeuristicSolrGui extends JFrame {
 
         String match = (String) matchTypeBox.getSelectedItem();
         
-        System.out.println(match);
+        log.info(match);
         
         if (match.equals(matchTypes[0])) {
-           SortedSet<ImageNumberWithDistance> best = HeuristicSolrUtil.findAndListBestHeuristicMarkers(Integer.parseInt(lineNumber),200);
+          System.out.println("heuristicmarkers selected");
+          SortedSet<ImageNumberWithDistance> best = HeuristicSolrUtil.findAndListBestHeuristicMarkers(Integer.parseInt(lineNumber),200);
            bestImages = best; // Now static variable that can be used by rendering frame
-            bestImages.stream().limit(10).forEach(image -> log.info("{}  {}", image.getLineNumber()+1, image.getDistance()));
-           createGallery();
         }
         else if (match.equals(matchTypes[1])) {
-          HeuristicSolrUtil.findAndListBestHeuristicPredictions(Integer.parseInt(lineNumber),200);
           System.out.println("predictions selected");
-          
+          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicPredictions(Integer.parseInt(lineNumber),200);
+          bestImages = best; // Now static variable that can be used by rendering frame
         }
-        
+        else if (match.equals(matchTypes[2])) {
+          System.out.println("mixed selected");
+          SortedSet<ImageNumberWithDistance> best =  HeuristicSolrUtil.findAndListBestHeuristicMixed(Integer.parseInt(lineNumber),200);
+          bestImages = best; // Now static variable that can be used by rendering frame
+        }
+        bestImages.stream().limit(10).forEach(image -> log.info("{}  {}", image.getLineNumber()+1, image.getDistance()));
+        createGallery();
    
         
       } catch (Exception ex) {
@@ -154,8 +164,6 @@ public class HeuristicSolrGui extends JFrame {
   }
 
 public  void createGallery() {
-
-      
       galleryPanel.removeAll();
        
       GridBagConstraints gbc = new GridBagConstraints();
@@ -163,36 +171,63 @@ public  void createGallery() {
       gbc.fill = GridBagConstraints.NONE;
       gbc.insets = new Insets(5, 2, 5, 2);
       
-      
-      
       int i=0;
       for (ImageNumberWithDistance  current : bestImages) {
-               
-        ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
-        ImageIcon picScaled = scaleImage(pic, 200, 200);
-
-        JLabel label  =  new JLabel (current.getImageName() +" ("+current.getDistance()+")", picScaled, JLabel.CENTER);                
+        JLabel label  = new JLabel (current.getImageName() +" ("+current.getDistance()+")", new ImageIcon(new BufferedImage(200,200,BufferedImage.TYPE_INT_ARGB)), JLabel.CENTER);
         label.setVerticalTextPosition(JLabel.BOTTOM);
         label.setHorizontalTextPosition(JLabel.CENTER);
         gbc.gridy = i/4;
         gbc.gridheight = 1;
         gbc.gridwidth = 1;          
         galleryPanel.add( label,gbc);
-      
-        
         label.addMouseListener(new ImageClickedMouseListener(current.getImageName()));
+        RenderGalleryImageThread thread = new RenderGalleryImageThread(imageFolder +current.getImageName(),label);
+        thread.start();
         
        i++;
       }
-       
-       
       
       galleryPanel.revalidate();
-      
-     
-      
 
   }
+
+class CloseFramedMouseListener implements MouseListener{
+    JFrame frame ;
+  
+  public CloseFramedMouseListener( JFrame frame ) {
+    this.frame=frame;
+  }
+  
+  @Override
+  public void mouseClicked(MouseEvent m) {
+   frame.dispose();
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void mouseExited(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void mousePressed(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+    
+  }
+  
+}
 
 class ImageClickedMouseListener implements MouseListener{
 
@@ -206,13 +241,14 @@ class ImageClickedMouseListener implements MouseListener{
   public void mouseClicked(MouseEvent m) {
 
     System.out.println("Clicked image:"+image);
-    JFrame galleryFrame = new JFrame();
-    galleryFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect           
+    JFrame singleImageFrame = new JFrame();
+    singleImageFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect
     ImageIcon imageFull = new ImageIcon(imageFolder +image);
-    JLabel label  =  new JLabel (imageFull);                    
-    galleryFrame.getContentPane().add(label);
-    galleryFrame.pack(); 
-    galleryFrame.setVisible(true); 
+    JLabel label  =  new JLabel (imageFull);
+    label.addMouseListener(new CloseFramedMouseListener(singleImageFrame));
+    singleImageFrame.getContentPane().add(label);
+    singleImageFrame.pack();
+    singleImageFrame.setVisible(true);
  
   }
 
@@ -242,62 +278,6 @@ class ImageClickedMouseListener implements MouseListener{
   
 }
 
-public static void createGalleryOLD() {
-
-  JFrame galleryFrame = new JFrame();
-  galleryFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect
-  galleryFrame.setTitle("Shortest distance");
-  
-  
-  galleryFrame.setPreferredSize(new Dimension(1200,800));         
-  JPanel galleryPanel = new JPanel (new GridBagLayout());
-  
-  JScrollPane scrollPane = new JScrollPane(galleryPanel,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-  scrollPane.setPreferredSize(new Dimension(600,800));            
-  galleryFrame.getContentPane().add(scrollPane);
-  galleryFrame.setVisible(true);
-  galleryFrame.setResizable(false);
-  
-   
-  GridBagConstraints gbc = new GridBagConstraints();
-  gbc.anchor = GridBagConstraints.WEST;
-  gbc.fill = GridBagConstraints.NONE;
-  gbc.insets = new Insets(5, 2, 5, 2);
-  
-  
-  
-  int i=0;
-  for (ImageNumberWithDistance  current : bestImages) {
-           
-    ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
-    ImageIcon picScaled = scaleImage(pic, 200, 200);
-    
-
-    JLabel label  =  new JLabel (current.getImageName() +" ("+current.getDistance()+")", picScaled, JLabel.CENTER);
-    label.setVerticalTextPosition(JLabel.BOTTOM);
-    label.setHorizontalTextPosition(JLabel.CENTER);
-    gbc.gridy = i/3;
-    gbc.gridheight = 1;
-    gbc.gridwidth = 1;          
-    galleryPanel.add( label,gbc);
-                    
-   i++;
-  }
-   
-   
-  
-  
-  
-  galleryFrame.add(scrollPane);
-  galleryFrame.pack();
-  galleryFrame.setVisible(true);
- 
-  
-
-}
-
-
-
   public static ImageIcon scaleImage(ImageIcon icon, int w, int h) {
     int nw = icon.getIconWidth();
     int nh = icon.getIconHeight();
@@ -314,7 +294,52 @@ public static void createGalleryOLD() {
 
     return new ImageIcon(icon.getImage().getScaledInstance(nw, nh, Image.SCALE_DEFAULT));
   }
-
   
+  
+  class RenderGalleryImageThread extends Thread {
+      JLabel label=null;
+      String imageFile = null;
+    public RenderGalleryImageThread(String imageFile, JLabel label){
+        this.imageFile=imageFile;
+        this.label=label;
+        this.setPriority(Thread.MIN_PRIORITY);
+    }
+
+
+     boolean stop=false;
+     public void run() {
+       
+       try {
+         new JFXPanel();
+         
+        String imageURL = Path.of(imageFile).toUri().toURL().toString();
+
+       // Using JavaFX with requestedWidth & requestedHeight _should_ make intelligent load-time scaling of JPEGs
+       javafx.scene.image.Image image = new javafx.scene.image.Image(imageURL, 200, 200, true, true);
+
+       BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
+       ImageIcon pic = new ImageIcon(bImage);
+       //ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
+       
+       label.setIcon(pic);
+       label.repaint();
+       /*
+         ImageIcon pic = new ImageIcon(imageFile);
+         ImageIcon picScaled = scaleImage(pic, 200, 200);
+         label.setIcon(picScaled);
+       */
+       
+       }
+       catch(Exception e) {
+         e.printStackTrace();
+       }
+    }
+
+    public void interrupt(){
+        stop=true;
+    }
+}
+
+
 
 }
