@@ -18,6 +18,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -36,7 +37,7 @@ import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
 public class HeuristicSolrGui extends JFrame {
-
+  private static DecimalFormat df2 = new DecimalFormat("#.##");
   private static final String imageFolder ="/media/teg/1200GB_SSD/display/";
   private static final long serialVersionUID = 1L;
   //  static String file = "/home/teg/workspace/fairly-similar/pixplot_vectors_270707.txt";
@@ -165,8 +166,9 @@ public  void createGallery() {
       gbc.insets = new Insets(5, 2, 5, 2);
       
       int i=0;
-      for (ImageNumberWithDistance  current : bestImages) {                            
-        JLabel label  = new JLabel (current.getImageName() +" ("+current.getDistance()+")", new ImageIcon(new BufferedImage(200,200,BufferedImage.TYPE_INT_ARGB)), JLabel.CENTER);                
+      for (ImageNumberWithDistance  current : bestImages) {       
+        String score2Digits=df2.format(current.getDistance());
+        JLabel label  = new JLabel (current.getImageName() +" ("+ score2Digits+")", new ImageIcon(new BufferedImage(200,200,BufferedImage.TYPE_INT_ARGB)), JLabel.CENTER);                
         label.setVerticalTextPosition(JLabel.BOTTOM);
         label.setHorizontalTextPosition(JLabel.CENTER);
         gbc.gridy = i/4;
