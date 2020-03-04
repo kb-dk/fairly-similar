@@ -126,10 +126,7 @@ public class HeuristicSolrGui extends JFrame {
   class FindImagesAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
-      try {
-        
-        
-        Thread.sleep(10000L);
+      try {                
         String lineNumber = textField.getText();
 
         String match = (String) matchTypeBox.getSelectedItem();
