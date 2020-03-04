@@ -9,12 +9,15 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*/
  * Optimize index with:  curl 'http://localhost:8983/solr/fairlysimilar/update?optimize=true&maxSegments=1&waitFlush=false'
  */
 public class FairlySimilarSolrClient {
  
+    private Logger log = LoggerFactory.getLogger(FairlySimilarSolrClient.class);
   private final static String SOLR_URL ="http://teg-desktop.sb:8983/solr/fairlysimilar";
   
   protected static HttpSolrClient solrServer;
@@ -117,8 +120,13 @@ public ArrayList<SolrDocument> query(String query, int numberOfResults, boolean 
     
     solrQuery.setRows(numberOfResults);    
 
-    QueryResponse rsp =  solrServer.query(solrQuery);    
-    SolrDocumentList docs = rsp.getResults();                            
+    log.info("Query started");
+    QueryResponse rsp =  solrServer.query(solrQuery);
+    log.info("Query complete");
+    log.info("Result parsing started");
+    
+    SolrDocumentList docs = rsp.getResults();
+    log.info("Result parsing complete");
     
     //System.out.println("Solr client query time:"+(System.currentTimeMillis() - start));
     return docs;     
