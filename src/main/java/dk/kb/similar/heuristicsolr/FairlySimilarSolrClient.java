@@ -107,7 +107,7 @@ public ArrayList<SolrDocument> query(String query, int numberOfResults) throws E
     SolrQuery solrQuery = new  SolrQuery();        
     solrQuery.setQuery(query);
     solrQuery.setRows(numberOfResults);    
-
+System.out.println(query);
     QueryResponse rsp =  solrServer.query(solrQuery);    
     SolrDocumentList docs = rsp.getResults();                            
     //System.out.println("Solr client query time:"+(System.currentTimeMillis() - start));

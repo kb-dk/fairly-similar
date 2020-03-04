@@ -42,19 +42,24 @@ public class HeuristicSolrUtil {
   }
   
 
-  public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristic(int id, int numberOfBest) throws Exception {
-    double[] orgCoords = getCoordsFromLine(jsonDataFile, id);
-    return findAndListBestHeuristic(id, orgCoords, numberOfBest);   
+  public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristicMarkers(int id, int numberOfBest) throws Exception {
+    double[] orgCoords = getParseJsonFromLine(jsonDataFile, id).getVector();
+    return findAndListBestHeuristicMarkers(orgCoords, numberOfBest);   
   }
 
-  public static    SortedSet<ImageNumberWithDistance> findAndListBestHeuristic(int testId,double[] orgCoords, int numberOfBest) throws Exception {
+  public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristicPredictions(int id, int numberOfBest) throws Exception {
+     ArrayList<Prediction> predictions = getParseJsonFromLine(jsonDataFile, id).getPredictions();
+    return findAndListBestHeuristicPredictions( predictions , numberOfBest);   
+  }
+  
+  public static    SortedSet<ImageNumberWithDistance> findAndListBestHeuristicMarkers(double[] orgCoords, int numberOfBest) throws Exception {
     //System.out.println("id:"+testId +" : coords:"+Arrays.toString(orgCoords));
     
     // Very interesting.. When searching, seems to better to use 40 markers
     boolean[] bitMapMarkers = getBitmapForMaxMarkers(orgCoords, 40);
 
 
-    String query = buildOrQueriesFromBitmap(bitMapMarkers, testId);
+    String query = buildOrQueriesFromBitmap(bitMapMarkers);
 
     
       long time = System.currentTimeMillis();
@@ -89,13 +94,49 @@ public class HeuristicSolrUtil {
     return findBestHeuristic;
   }
   
+  public static    SortedSet<ImageNumberWithDistance> findAndListBestHeuristicPredictions(ArrayList<Prediction> predictions, int hits) throws Exception {
+    //System.out.println("id:"+testId +" : coords:"+Arrays.toString(orgCoords));
+    
+
+   StringBuilder query =  new StringBuilder();//buildOrQueriesFromBitmap(bitMapMarker);
+    for (Prediction p : predictions) {
+     System.out.println(p);
+      query.append("designation:\""+p.getDesignation()+"\"^"+p.getProbability()+" OR "  );
+         
+     }
+      query.append("designation:\"none\""); //finish line
+    
+      System.out.println(query);
+      if (true) {
+      return new TreeSet<ImageNumberWithDistance>();
+      }
+    
+      long time = System.currentTimeMillis();
+      ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().query(query.toString(), hits);
+      System.out.println("Solr query time:"+ (System.currentTimeMillis() - time));
+         
+    // Calculate distance for Solr hits, see if it finds low distance candidates
+    SortedSet<ImageNumberWithDistance> predictionHits = new TreeSet<ImageNumberWithDistance>();
+    for (SolrDocument doc : docs) {
+      String id = (String) doc.getFieldValue("id");
+      String imageName = (String) doc.getFieldValue("imagename");
+
+      ImageNumberWithDistance img = new ImageNumberWithDistance();
+      img.setLineNumber(Integer.parseInt(id));
+      img.setImageName(imageName);
+      predictionHits.add(img);
+    }
+        
+    return predictionHits;
+  }
+  
   public static  ArrayList<String> getIdsForBestHeuristic(int testId,double[] orgCoords, int solrResults) throws Exception {
     
     //System.out.println("id:"+testId +" : coords:"+Arrays.toString(orgCoords));
     // Very interesting.. When searching, seems to better to use 40 markers
     boolean[] bitMapMarkers = getBitmapForMaxMarkers(orgCoords, 40);
 
-    String query = buildOrQueriesFromBitmap(bitMapMarkers, testId);
+    String query = buildOrQueriesFromBitmap(bitMapMarkers);
          
      ArrayList<SolrDocument> docs = FairlySimilarSolrClient.getInstance().queryIdOnly(query, solrResults);            
     // Calculate distance for Solr hits, see if it finds low distance candidates
@@ -230,7 +271,7 @@ public class HeuristicSolrUtil {
 
   }
 
-  public static double[] getCoordsFromLine(String file, int lineNumber) throws Exception {
+  public static JsonLineParsed getParseJsonFromLine(String file, int lineNumber) throws Exception {
 
     try (BufferedReader br = new BufferedReader(new FileReader(file,Charset.forName("UTF-8")))) {
       String line;
@@ -244,8 +285,8 @@ public class HeuristicSolrUtil {
         linesRead++;
       }
       JsonLineParsed parsed = parseJson(line);
-      System.out.println("parsed:"+parsed.getImageName());
-      return parsed.getVector();
+      
+      return parsed;
     }
   }
 
@@ -262,7 +303,7 @@ public class HeuristicSolrUtil {
     return sum;
   }
 
-  private static String buildOrQueriesFromBitmap(boolean[] bitmap, int excludeId) {
+  private static String buildOrQueriesFromBitmap(boolean[] bitmap) {
     StringBuilder builder = new StringBuilder();
     builder.append("(");
     for (int i = 0; i < bitmap.length; i++) {
@@ -272,7 +313,7 @@ public class HeuristicSolrUtil {
     }
     builder.append("ID:NONE"); // Lazy, just ending the ORS
     builder.append(")");
-    builder.append(" -id:"+excludeId);
+    
 
     return builder.toString();
   }
