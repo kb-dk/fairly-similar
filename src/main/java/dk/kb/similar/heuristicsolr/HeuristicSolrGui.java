@@ -1,6 +1,9 @@
 package dk.kb.similar.heuristicsolr;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -32,7 +35,10 @@ import javax.swing.border.BevelBorder;
 
 public class HeuristicSolrGui extends JFrame {
 
-  private static final String imageFolder ="/media/teg/1200GB_SSD/display/";
+  
+  private Logger log = LoggerFactory.getLogger(HeuristicSolrGui.class);
+  
+  private static final String imageFolder ="/home/abr/display/";
   private static final long serialVersionUID = 1L;
   //  static String file = "/home/teg/workspace/fairly-similar/pixplot_vectors_270707.txt";
   static JTextField textField;
@@ -129,6 +135,7 @@ public class HeuristicSolrGui extends JFrame {
         if (match.equals(matchTypes[0])) {
            SortedSet<ImageNumberWithDistance> best = HeuristicSolrUtil.findAndListBestHeuristicMarkers(Integer.parseInt(lineNumber),200);
            bestImages = best; // Now static variable that can be used by rendering frame
+            bestImages.stream().limit(10).forEach(image -> log.info("{}  {}", image.getLineNumber()+1, image.getDistance()));
            createGallery();
         }
         else if (match.equals(matchTypes[1])) {
