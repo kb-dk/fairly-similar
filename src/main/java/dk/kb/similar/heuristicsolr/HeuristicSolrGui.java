@@ -276,23 +276,23 @@ class ImageClickedMouseListener implements MouseListener{
        
        try {
          new JFXPanel();
-         /*
+         
          String imageURL = Path.of(imageFile).toUri().toURL().toString();
        System.out.println("URL_"+imageURL);
        // Using JavaFX with requestedWidth & requestedHeight _should_ make intelligent load-time scaling of JPEGs
        javafx.scene.image.Image image = new javafx.scene.image.Image(imageURL, 200, 200, true, true);
 
-       ImageIcon pic = new ImageIcon(image);
+       BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
+       ImageIcon pic = new ImageIcon(bImage);
        //ImageIcon pic = new ImageIcon(imageFolder +current.getImageName());
-       ImageIcon picScaled = scaleImage(pic, 200, 200);
-
-       label.setIcon(picScaled);
+       
+       label.setIcon(pic);
        label.repaint();
-       */
+       /*
          ImageIcon pic = new ImageIcon(imageFile);
          ImageIcon picScaled = scaleImage(pic, 200, 200);
          label.setIcon(picScaled);
-       
+       */
        
        }
        catch(Exception e) {
