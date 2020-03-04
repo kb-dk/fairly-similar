@@ -194,6 +194,44 @@ public  void createGallery() {
 
   }
 
+class CloseFramedMouseListener implements MouseListener{
+    JFrame frame ;
+  
+  public CloseFramedMouseListener( JFrame frame ) {
+    this.frame=frame;
+  }
+    
+  @Override
+  public void mouseClicked(MouseEvent m) {
+   frame.dispose();
+  }
+
+  @Override
+  public void mouseEntered(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void mouseExited(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void mousePressed(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void mouseReleased(MouseEvent arg0) {
+    // TODO Auto-generated method stub
+    
+  }
+  
+}
+
 class ImageClickedMouseListener implements MouseListener{
 
   String image = null;
@@ -206,13 +244,14 @@ class ImageClickedMouseListener implements MouseListener{
   public void mouseClicked(MouseEvent m) {
 
     System.out.println("Clicked image:"+image);
-    JFrame galleryFrame = new JFrame();
-    galleryFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect           
+    JFrame singleImageFrame = new JFrame();
+    singleImageFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect           
     ImageIcon imageFull = new ImageIcon(imageFolder +image);
-    JLabel label  =  new JLabel (imageFull);                    
-    galleryFrame.getContentPane().add(label);
-    galleryFrame.pack(); 
-    galleryFrame.setVisible(true); 
+    JLabel label  =  new JLabel (imageFull);                        
+    label.addMouseListener(new CloseFramedMouseListener(singleImageFrame));
+    singleImageFrame.getContentPane().add(label);
+    singleImageFrame.pack(); 
+    singleImageFrame.setVisible(true); 
  
   }
 
