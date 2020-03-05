@@ -22,6 +22,8 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -41,7 +43,7 @@ import javax.swing.border.BevelBorder;
 
 public class HeuristicSolrGui extends JFrame {
     
-    private static DecimalFormat df2 = new DecimalFormat("#.##");
+    private static DecimalFormat df2 = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ROOT));
     
     private Logger log = LoggerFactory.getLogger(HeuristicSolrGui.class);
     
