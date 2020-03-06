@@ -1,16 +1,11 @@
 package dk.kb.similar.heuristicsolr;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.solr.common.SolrDocument;
 
 import org.json.JSONArray;
@@ -41,23 +36,45 @@ public class HeuristicSolrUtil {
    */
     }
     
+    public static JsonLineParsed getDocFromSolr(int id) throws Exception {
+      JsonLineParsed  parsed = new  JsonLineParsed ();
+      SolrDocument doc = FairlySimilarSolrClient.getInstance().getById(id);      
+      String coordStr = (String) doc.getFieldValue("coordinates");
+      String imageName = (String) doc.getFieldValue("imagename");
+      ArrayList<String> desigAndProb = (ArrayList<String>) doc.getFieldValue("designation_probability");
+      ArrayList<Prediction> predictions = new ArrayList<Prediction>(); 
+      for (String line : desigAndProb ) {
+        Prediction p = parsed.new Prediction();
+        String[] split = line.split(":");
+        p.setDesignation(split[0]);
+        p.setProbability(Double.valueOf(split[1]));
+        predictions.add(p);
+      }      
+      double[] coords = convertLineToVector(coordStr);      
+      parsed.setVector(coords);      
+      parsed.setImageName(imageName);
+      parsed.setPredictions(predictions);
+      return parsed;
+      
+      
+    }
     
     public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristicMarkers(int id, int numberOfBest)
             throws Exception {
-        double[] orgCoords = getParseJsonFromLine(jsonDataFile, id).getVector();
-        return findAndListBestHeuristicMarkers(orgCoords, numberOfBest);
+          JsonLineParsed doc = getDocFromSolr(id);      
+        return findAndListBestHeuristicMarkers(doc.getVector(), numberOfBest);
     }
     
     public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristicPredictions(int id, int numberOfBest)
             throws Exception {
-        ArrayList<Prediction> predictions = getParseJsonFromLine(jsonDataFile, id).getPredictions();
-        return findAndListBestHeuristicPredictions(predictions, numberOfBest);
+      JsonLineParsed doc = getDocFromSolr(id);
+        return findAndListBestHeuristicPredictions(doc.getPredictions(), numberOfBest);
     }
     
     public static SortedSet<ImageNumberWithDistance> findAndListBestHeuristicMixed(int id, int numberOfBest)
             throws Exception {
-        JsonLineParsed parsed = getParseJsonFromLine(jsonDataFile, id);
-        return findAndListBestHeuristicMixed(parsed.getVector(), parsed.getPredictions(), numberOfBest);
+         JsonLineParsed doc = getDocFromSolr(id);
+        return findAndListBestHeuristicMixed(doc.getVector(), doc.getPredictions(), numberOfBest);
     }
     
     public static SortedSet<ImageNumberWithDistance> findRandomImages(int numberOfBest) throws Exception {
@@ -288,9 +305,14 @@ public class HeuristicSolrUtil {
                     coordsBuffer.append(coord + " ");
                 }
                 ArrayList<String> designations = new ArrayList<String>();
+                ArrayList<String> designationsAndProbability = new ArrayList<String>();
                 for (Prediction p : parsed.getPredictions()) {
                     designations.add(p.getDesignation());
                 }
+                for (Prediction p : parsed.getPredictions()) {
+                  designationsAndProbability.add(p.getDesignation() +":"+p.getProbability());             
+                }
+                
                 solrClient.indexVectorJson(linesRead,
                                            parsed.getPath(),
                                            parsed.getImageName(),
@@ -298,7 +320,8 @@ public class HeuristicSolrUtil {
                                            bitmap,
                                            trues,
                                            lengthSquared,
-                                           designations);
+                                           designations,
+                                           designationsAndProbability);
                 linesRead++;
             }
             solrClient.commit();
@@ -338,7 +361,7 @@ public class HeuristicSolrUtil {
         return parsed;
     }
     
-    
+   /* 
     public static JsonLineParsed getParseJsonFromLine(String file, int lineNumber) throws Exception {
         
         try (BufferedReader br = new BufferedReader(new FileReader(file, Charset.forName("UTF-8")))) {
@@ -357,7 +380,7 @@ public class HeuristicSolrUtil {
             return parsed;
         }
     }
-    
+    */
     public ArrayList<String> getBestMatchIDs(boolean[] bitmap, int excludeId) {
         return null;
     }
@@ -395,60 +418,8 @@ public class HeuristicSolrUtil {
         }
         return trues;
     }
-    
-    //Not used. Constant numbers of markers was a better strategy
-    private static boolean[] buildThresholdBitmapFromLine(String line, double threshold) {
-        String[] coords = line.split(" ");
-        boolean[] thresholdBitmap = new boolean[4096];
-        int coordNumber = 0;
-        for (String coord : coords) {
-            double parseDouble = Double.parseDouble(coord);
-            if (parseDouble > threshold) {
-                thresholdBitmap[coordNumber++] = true;
-            } else {
-                thresholdBitmap[coordNumber++] = false;
-            }
-        }
-        return thresholdBitmap;
-    }
-    
-    private static int countBitMapOverlap(boolean[] b1, boolean[] b2) {
-        
-        int matches = 0;
-        
-        for (int i = 0; i < 4096; i++) {
-            if (b1[i] && b2[i]) {
-                matches++;
-            }
+       
             
-        }
-        
-        return matches;
-        
-    }
-    
-    /*
-     * Could how many true on same bits.
-     */
-    private static int countBitMapOverlapFromSolr(String id1, String id2) throws Exception {
-        FairlySimilarSolrClient client = FairlySimilarSolrClient.getInstance();
-        String query1 = "id:" + id1;
-        String query2 = "id:" + id2;
-        SolrDocument doc1 = client.query(query1, 1, true).get(0);
-        SolrDocument doc2 = client.query(query2, 1, true).get(0);
-        
-        int matches = 0;
-        for (int i = 0; i < 4096; i++) {
-            boolean b1 = (Boolean) doc1.getFieldValue(i + "_threshold");
-            boolean b2 = (Boolean) doc2.getFieldValue(i + "_threshold");
-            if (b1 && b2) {
-                matches++;
-            }
-        }
-        // System.out.println(id1+":"+id2 +":" +doc1.getFieldValue("thresholds")
-        // +":" +doc2.getFieldValue("thresholds"));
-        return matches;
-    }
     
     public static double getDistanceSquared(double[] v1, double[] v2) {
         double sumSquared = 0d;

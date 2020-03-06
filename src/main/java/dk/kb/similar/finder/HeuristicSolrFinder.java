@@ -76,7 +76,7 @@ extends NearestFinder {
     
     public double[] getCoordinatesForId(int id) {
       double[] coords = new double[2048]; 
-      for (int i=0;i<2048;i++) {
+      for (int i=0;i<4097;i++) {
         coords[i]=multiDimPoints.get(i, id); 
      }
      return coords;

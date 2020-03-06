@@ -13,6 +13,8 @@
    <field name="lengthsquared"    type="double" stored="true" required="true" /> 
    <field name="coordinates"      type="string" stored="true" indexed="false" required="true" /> 
    <field name="designation"      type="string" stored="true" indexed="true" multiValued = "true" />
+    <!-- Double valued concatenated field designation:probabilty-->
+   <field name="designation_probability" type="string" stored="true" indexed="false" multiValued = "true" />
 
    <!-- for coordinates thresholds-->
    <dynamicField name="*_threshold" type="boolean" indexed="true"  stored="true"/>

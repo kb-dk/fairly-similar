@@ -43,8 +43,8 @@ public class FairlySimilarSolrClient {
     solrServer.add(doc);  
   }
   
-  public void indexVectorJson(int id,String path, String imageName, String coordinates, boolean[] thresholds, int trues, double lengthSquared,  ArrayList<String> designations) throws Exception{
-    SolrInputDocument doc = createDocJson(id, path, imageName,coordinates,thresholds, trues, lengthSquared, designations);
+  public void indexVectorJson(int id,String path, String imageName, String coordinates, boolean[] thresholds, int trues, double lengthSquared,  ArrayList<String> designations ,ArrayList<String> designationsAndProbability) throws Exception{
+    SolrInputDocument doc = createDocJson(id, path, imageName,coordinates,thresholds, trues, lengthSquared, designations,designationsAndProbability);
     solrServer.add(doc);  
   }
   
@@ -63,7 +63,9 @@ public class FairlySimilarSolrClient {
     return doc;
   }
   
-  public  SolrInputDocument createDocJson(int id, String path, String imageName,String coordinates, boolean[] thresholds,int trues,double lengthSquared, ArrayList<String> designations){
+  
+  
+  public  SolrInputDocument createDocJson(int id, String path, String imageName,String coordinates, boolean[] thresholds,int trues,double lengthSquared, ArrayList<String> designations, ArrayList<String> designationsAndProbability){
     SolrInputDocument doc = new SolrInputDocument();
 
       doc.setField("id",id);
@@ -77,10 +79,15 @@ public class FairlySimilarSolrClient {
         doc.addField("designation", designation);
       }
       
+      for (String designAndProp: designationsAndProbability) {
+        doc.addField("designation_probability",designAndProp);      
+      }
+      
       for (int i =0;i<thresholds.length ; i++) {
        doc.setField(i+"_threshold",thresholds[i]);//Dynamic field                 
      }
-          
+      
+      
     return doc;
   }
 
@@ -134,8 +141,6 @@ public ArrayList<SolrDocument> query(String query, int numberOfResults, boolean 
   
 
 public ArrayList<SolrDocument> queryIdOnly(String query, int numberOfResults) throws Exception{    
-  //System.out.println("q2:"+query +" results:"+numberOfResults);
-  long start = System.currentTimeMillis();
   SolrQuery solrQuery = new  SolrQuery();        
   solrQuery.setQuery(query);
   solrQuery.setRows(numberOfResults);    
@@ -145,6 +150,20 @@ public ArrayList<SolrDocument> queryIdOnly(String query, int numberOfResults) th
   //System.out.println("Solr client query time:"+(System.currentTimeMillis() - start) +" Intern solr elapsedtime:"+rsp.getElapsedTime());
   return docs;     
 }
+
+public SolrDocument getById(int id) throws Exception{    
+  SolrQuery solrQuery = new  SolrQuery();        
+  solrQuery.setQuery("id:"+id);     
+  solrQuery.setFields(new String[] {"id","coordinates","designation_probability","imagename"}); 
+  QueryResponse rsp =  solrServer.query(solrQuery);      
+  SolrDocumentList docs = rsp.getResults();                        
+  if (docs.size() !=1) {
+    throw new RuntimeException("Not found ID:"+id);
+  }
+  //
+  return docs.get(0);     
+}
+
 
 
   
