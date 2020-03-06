@@ -54,6 +54,7 @@ public class HeuristicSolrUtil {
       parsed.setVector(coords);      
       parsed.setImageName(imageName);
       parsed.setPredictions(predictions);
+      parsed.setId(id);
       return parsed;
       
       

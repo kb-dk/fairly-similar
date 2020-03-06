@@ -4,8 +4,11 @@ package dk.kb.similar.heuristicsolr;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swing.SwingFXUtils;
 
+import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import dk.kb.similar.heuristicsolr.JsonLineParsed.Prediction;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -41,6 +44,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
+
+/*
+ * godt ID til demo: 193838
+ * horse_cart: 48613
+ */
 public class HeuristicSolrGui extends JFrame {
     
     private static DecimalFormat df2 = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ROOT));
@@ -104,7 +112,7 @@ public class HeuristicSolrGui extends JFrame {
         JScrollPane scrollPane = new JScrollPane(galleryPanel,
                                                  JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                                                  JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setPreferredSize(new Dimension(1400, 800));
+        scrollPane.setPreferredSize(new Dimension(1200, 800));
         p.add(scrollPane, BorderLayout.SOUTH);
         getContentPane().add(p);
         
@@ -201,7 +209,7 @@ public class HeuristicSolrGui extends JFrame {
             gbc.gridheight = 1;
             gbc.gridwidth = 1;
             galleryPanel.add(label, gbc);
-            label.addMouseListener(new ImageClickedMouseListener(current.getImageName()));
+            label.addMouseListener(new ImageClickedMouseListener(current.getLineNumber()));
             RenderGalleryImageThread thread = new RenderGalleryImageThread(imageFolder + current.getImageName(), label);
             thread.start();
             
@@ -252,22 +260,51 @@ public class HeuristicSolrGui extends JFrame {
     
     class ImageClickedMouseListener implements MouseListener {
         
-        String image = null;
+        int id = 0;
         
-        public ImageClickedMouseListener(String image) {
-            this.image = image;
+        public ImageClickedMouseListener(int id) {
+            this.id=id;
         }
         
         @Override
         public void mouseClicked(MouseEvent m) {
+          JsonLineParsed doc = null;
+          try {
+              doc = HeuristicSolrUtil.getDocFromSolr(id);
+          }
+          catch(Exception e) {
+            e.printStackTrace();
+          }
+          
+            StringBuilder labelText = new StringBuilder();
+            labelText.append("<html><body>");
+            labelText.append("ID:"+doc.getId() +"<br>");
+            labelText.append("image name:"+doc.getImageName() +"<br>");           
             
-            System.out.println("Clicked image:" + image);
+            labelText.append("<tabel>");
+            for ( Prediction p : doc.getPredictions()) {
+              labelText.append("<tr><td>"+p.getDesignation() +"</td><td>"+p.getProbability() +"</td></>");
+            }
+            labelText.append("</tabel>");
+            labelText.append("</<body></html>");
+            
+            System.out.println("Clicked image:" + doc.getImageName());
             JFrame singleImageFrame = new JFrame();
+            
             singleImageFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);//Garbage collect
-            ImageIcon imageFull = new ImageIcon(imageFolder + image);
+            ImageIcon imageFull = new ImageIcon(imageFolder + doc.getImageName());
             JLabel label = new JLabel(imageFull);
+            label.setHorizontalTextPosition(JLabel.CENTER);
+            label.setVerticalTextPosition(JLabel.BOTTOM);
+            label.setText( labelText.toString());
             label.addMouseListener(new CloseFramedMouseListener(singleImageFrame));
-            singleImageFrame.getContentPane().add(label);
+            JScrollPane scrollPane = new JScrollPane(label,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setPreferredSize(new Dimension(1200, 800));
+            
+            
+            singleImageFrame.getContentPane().add(scrollPane );
             singleImageFrame.pack();
             singleImageFrame.setVisible(true);
             

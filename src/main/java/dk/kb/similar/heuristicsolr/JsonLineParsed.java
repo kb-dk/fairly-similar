@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 public class JsonLineParsed {
 
+ private int id;
  private String path;
  private String imageName;
  private ArrayList<Prediction> predictions;
@@ -42,6 +43,16 @@ public void setPredictions(ArrayList<Prediction> predictions) {
 
 public double[] getVector() {
   return vector;
+}
+
+
+public int getId() {
+  return id;
+}
+
+
+public void setId(int id) {
+  this.id = id;
 }
 
 
