@@ -133,4 +133,42 @@ There can be multiple readers. This is used when the collection is updated and `
 
 The API will be specified in detail using the OpenAPI 1.3 standard. This is just a broad overview.
 
- * `getSimilar(imageURL, limit)` return up to `limit` `imageURL`s, sorted by visual similarity distance from the input image. Note that this might involve an ML-analysis of the input image, if it is not already present in the collection.
+Core concepts are `group`s, `set`s and `collage`s.
+
+`set` is a named list of `imageURL`s:
+```
+{ setA: ["http://example.com/1.jpg", "http://example.com/foo.jpg"] }
+```
+
+`group` is a named list of named `set`s:
+```
+groupA: { 
+  setA: ["http://example.com/1A.jpg", "http://example.com/fooA.jpg"], 
+  setB: ["http://example.com/1B.jpg", "http://example.com/fooB.jpg"]
+}
+```
+
+`collage` is a named grid of `imageURL`s with setIDs:
+```
+collageA : {
+  gridWidth: 4,
+  gridHeight: 3,
+  aspectRatio: 1.33,
+  sort: "rainbow",
+  sortOrder: "topLeftBottomRight",
+  sources: [
+    { imageURL: "http://example.com/1B.jpg", setID: "setB" },
+    { imageURL: "http://example.com/fooA.jpg", setID: "setA" },
+    { imageURL: "http://example.com/1A.jpg", setID: "setA" },
+    { imageURL: "http://example.com/fooB.jpg", setID: "setB" },
+    ...
+  ]
+}
+```
+
+
+ * `getSimilar(imageURL, limit): <to be defined>` return up to `limit` `imageURL`s, sorted by visual similarity distance from the input image. Note that this might involve an ML-analysis of the input image, if it is not already present in the collection.
+ * `defineSet(setID, imageURL*): void` create a persistent set of images with the given `setID` for future use.
+ * `defineroup(groupID, set*|setID): void` create a persistent group of sets with the given `groupID` for future use.
+ * `createCollage(collageID, set|setID|group|groupID, gridWidth, gridHeight, aspectRatio, sort, sortOrder): collage` create an internal representation of a collage of images. The concrete grid layout is determined by `gridWidth`, `gridHeight`, `aspectRatio` from what is defined (values <= 0 means undefined). `sort` can be `[imageID, similarity, rainbow, brightness]`. `sortOrder` can be `[topDown, bottomUp, leftRight, rightLeft, topLeftBottomRight, topRightBottomLeft, bottomLeftTopRight, bottomRightTopLeft, insideOut, outsideIn]` (some `sortOrder`s  are invalid with `sort=similarity`).
+ * `collageTiles/collageID/*` DeepZoom-compatible tile source for a previously defined collage.
