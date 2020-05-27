@@ -28,7 +28,7 @@ import java.util.*;
  */
 public class NearestNeighbour {
     public static final int POINTS_DEFAULT = 270707;
-    public static final int RUNS_DEFAULT = 10;
+    public static final int RUNS_DEFAULT = 100;
     public static final int DIMENSIONS_DEFAULT = 2048;
     private static final String SAMPLE_DEFAULT = "pixplot_vectors_270707.bin";
 
@@ -47,8 +47,8 @@ public class NearestNeighbour {
      //finders.add(new EarlyNearestFinder(multiDimPoints)); // Guaranteed correct
        finders.add(new StrongestSignalsFinder(multiDimPoints));
      //finders.add(new DiceNearestFinder(multiDimPoints));
-     //finders.add(new LengthNearestFinder(multiDimPoints));
-       finders.add( new HeuristicSolrFinder(multiDimPoints));
+     //finders.add(new LengthNearestFinder(multiDimPoints))
+     //finders.add( new HeuristicSolrFinder(multiDimPoints));
      //finders.add(new RandomFinder(multiDimPoints));
       return finders;
     }
